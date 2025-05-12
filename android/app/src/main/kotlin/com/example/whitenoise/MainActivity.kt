@@ -1,4 +1,4 @@
-package com.example.whitenoise_flutter
+package com.example.whitenoise
 
 import io.flutter.embedding.android.FlutterActivity
 
