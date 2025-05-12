@@ -1,7 +1,7 @@
 # High Level Overview
 
 ## Project Overview
-WhiteNoise is a secure messaging application built with Flutter, leveraging Nostr's decentralized infrastructure and the MLS protocol for secure, scalable messaging. The app will support iOS, Android, macOS, Linux, and Windows platforms.
+WhiteNoise is a secure messaging application built with Flutter & Rust, leveraging Nostr's decentralized infrastructure and the MLS protocol for secure, scalable messaging. The app will support iOS, Android, macOS, Linux, and Windows platforms.
 
 ## Core Architecture
 
@@ -51,8 +51,12 @@ WhiteNoise is a secure messaging application built with Flutter, leveraging Nost
 ### Push Notifications
 - We want to have optional push notifications available for users.
   - The most helpful (but least privacy preserving) will be the platform specific push notifications. Many users will be fine with these so they should be the default but not on by default.
-  - We want to offer nostr specific solutions where possible. e.g. Android notifications via
+  - We want to offer nostr specific solutions where possible. e.g. Android notifications via Pokey
   - We want to try and background poll when needed so that we can fetch new messages periodically if we don't have push notifications turned on
+
+### Built-in wallet
+- We want to allow users to send money via lightning or cashu in the app.
+- We have a lot of exploration and design to do here before we start implementing but it's good to know that it's something we want to add.
 
 ### Future Considerations
 - Offline message queuing
