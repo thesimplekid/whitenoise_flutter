@@ -21,6 +21,7 @@ WhiteNoise is a secure messaging application built with Flutter & Rust, leveragi
 - Receives comprehensive state object from Rust layer
 - Updates UI based on state changes and events
 - Platform-specific UI components where appropriate
+- Response design that works well on mobile screens but expands to two panel design (like most messengers) at wider screens on desktop.
 
 ## Key Features
 
