@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:whitenoise/features/contact_list/presentation/chat_list_screen.dart';
 import 'package:whitenoise/screens/auth_flow/welcome_page.dart';
 import 'package:whitenoise/src/rust/frb_generated.dart';
 
@@ -13,11 +16,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'White Noise',
-      theme: ThemeData.light(),
-      debugShowCheckedModeBanner: false,
-      home: const WelcomePage(),
+    final width = MediaQuery.of(context).size.width;
+
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+
+    return ScreenUtilInit(
+      designSize: width > 600 ? const Size(600, 1024) : const Size(390, 844),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return MaterialApp(
+          title: 'White Noise',
+          theme: ThemeData.light(),
+          debugShowCheckedModeBanner: false,
+          home: const WelcomePage(),
+        );
+      },
     );
   }
 }

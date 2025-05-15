@@ -38,6 +38,9 @@ dependencies:
     rust_lib_whitenoise:
         path: rust_builder
     flutter_rust_bridge: 2.9.0
+    flutter_screenutil: ^5.9.3
+    flutter_svg: ^2.1.0
+    gap: ^3.0.1
 
 dev_dependencies:
     flutter_test:
@@ -65,10 +68,9 @@ flutter:
     # To add assets to your application, add an assets section, like this:
     assets:
         - assets/
+        - assets/svgs/
+        - assets/pngs/
     #   - images/a_dot_ham.jpeg
-
-    # An image asset can refer to one or more resolution-specific "variants", see
-    # https://flutter.dev/to/resolution-aware-images
 
     # For details regarding adding assets from package dependencies, see
     # https://flutter.dev/to/asset-from-package
