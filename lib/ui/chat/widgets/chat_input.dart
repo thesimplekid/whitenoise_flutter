@@ -1,20 +1,22 @@
 import 'dart:async';
+
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:date_format/date_format.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:whitenoise/domain/models/message_model.dart';
 import 'package:whitenoise/ui/chat/widgets/stacked_images.dart';
+
 import '../../../domain/dummy_data/dummy_messages.dart';
 import '../../../domain/models/contact_model.dart';
 import '../../core/themes/colors.dart';
 
 class ChatInput extends StatefulWidget {
   const ChatInput({
-    Key? key,
+    super.key,
     this.onSend,
     //required this.user,
     required this.padding,
@@ -24,7 +26,7 @@ class ChatInput extends StatefulWidget {
     this.mediaSelector,
     this.imageSource = ImageSource.gallery,
     //required this.theme,
-  }) : super(key: key);
+  });
 
   final void Function(MessageModel message)? onSend;
   final void Function()? attachBtnClicked;
@@ -302,7 +304,7 @@ class _ChatInputState extends State<ChatInput> {
       key: ValueKey('recording'), // Important for AnimatedSwitcher
       children: [
         Expanded(
-          child: Container(
+          child: SizedBox(
             height: 54,
             child: Stack(
               alignment: AlignmentDirectional.centerStart,
@@ -398,7 +400,7 @@ class _ChatInputState extends State<ChatInput> {
       key: ValueKey('textInput'), // Important for AnimatedSwitcher
       children: [
         widget.mediaSelector != null
-            ? InkWell(child: widget.mediaSelector, onTap: _handleImagePick)
+            ? InkWell(onTap: _handleImagePick, child: widget.mediaSelector)
             : _buildIconBtn(Icons.attach_file, _handleImagePick),
         const SizedBox(width: 5),
         _buildTextField(),
@@ -418,18 +420,14 @@ class _ChatInputState extends State<ChatInput> {
                       isRecording
                           ? [
                             BoxShadow(
-                              color: Colors.red.withOpacity(0.6),
+                              color: Colors.red.withValues(alpha: 0.6),
                               blurRadius: 12,
                               spreadRadius: 2,
                             ),
                           ]
                           : [],
                 ),
-                child: Icon(
-                  Icons.mic,
-                  size: 30,
-                  color: AppColors.glitch950,
-                ),
+                child: Icon(Icons.mic, size: 30, color: AppColors.glitch950),
               ),
             )
             : SizedBox.shrink(),

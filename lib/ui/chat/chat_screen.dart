@@ -1,4 +1,5 @@
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
@@ -11,10 +12,11 @@ import 'package:whitenoise/ui/chat/widgets/reaction/reaction_default_data.dart';
 import 'package:whitenoise/ui/chat/widgets/reaction/reaction_hero_dialog_route.dart';
 import 'package:whitenoise/ui/chat/widgets/reaction/reactions_dialog_widget.dart';
 import 'package:whitenoise/ui/chat/widgets/status_message_item_widget.dart';
+
+import '../../domain/dummy_data/dummy_messages.dart';
 import '../../routing/routes.dart';
 import '../core/themes/assets.dart';
 import '../core/themes/colors.dart';
-import '../../domain/dummy_data/dummy_messages.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -259,7 +261,8 @@ class _ChatScreenState extends State<ChatScreen> {
                             HeroDialogRoute(
                               builder: (context) {
                                 return ReactionsDialogWidget(
-                                  id: message.id, // unique id for message
+                                  id: message.id,
+                                  // unique id for message
                                   menuItems:
                                       message.isMe
                                           ? DefaultData.myMessageMenuItems
@@ -268,7 +271,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                     message: message,
                                     isGroupMessage: false,
                                     messageIndex: index,
-                                  ), // message widget
+                                  ),
+                                  // message widget
                                   onReactionTap: (reaction) {
                                     if (reaction == '⋯') {
                                       //'➕'
@@ -283,7 +287,9 @@ class _ChatScreenState extends State<ChatScreen> {
                                     }
                                   },
                                   onContextMenuTap: (menuItem) {
-                                    print('menu item: $menuItem');
+                                    if (kDebugMode) {
+                                      print('menu item: $menuItem');
+                                    }
                                     // handle context menu item
                                   },
                                   // align widget to the right for my message and to the left for contact message

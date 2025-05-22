@@ -4,10 +4,10 @@ import 'package:gap/gap.dart';
 import 'package:supa_carbon_icons/supa_carbon_icons.dart';
 import 'package:whitenoise/domain/dummy_data/dummy_messages.dart';
 import 'package:whitenoise/domain/models/message_model.dart';
+import 'package:whitenoise/ui/chat/widgets/chat_audio_item.dart';
+import 'package:whitenoise/ui/chat/widgets/chat_reply_item.dart';
 import 'package:whitenoise/ui/chat/widgets/reaction/stacked_reactions.dart';
-import '../../core/themes/colors.dart';
-import 'chat_audio_item.dart';
-import 'chat_reply_item.dart';
+import 'package:whitenoise/ui/core/themes/colors.dart';
 
 class MessageWidget extends StatelessWidget {
   const MessageWidget({
@@ -23,6 +23,10 @@ class MessageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //TODO: null promotion to avoid crashes
+    // final messageText = message.message ?? '';
+    // final senderName = message.senderData?.name ?? '';
+
     return Align(
       alignment: message.isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: ConstrainedBox(
@@ -169,7 +173,7 @@ class MessageWidget extends StatelessWidget {
                     ? Container(
                       margin: EdgeInsets.only(bottom: 5),
                       child: Text(
-                        message.senderData!.name ?? "",
+                        message.senderData!.name,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.error,
                         ),

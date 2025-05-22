@@ -1,8 +1,11 @@
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supa_carbon_icons/supa_carbon_icons.dart';
 import 'package:whitenoise/domain/models/message_model.dart';
+import 'package:whitenoise/routing/routes.dart';
 import 'package:whitenoise/ui/chat/widgets/chat_input.dart';
 import 'package:whitenoise/ui/chat/widgets/contact_info.dart';
 import 'package:whitenoise/ui/chat/widgets/message_widget.dart';
@@ -10,11 +13,10 @@ import 'package:whitenoise/ui/chat/widgets/reaction/reaction_default_data.dart';
 import 'package:whitenoise/ui/chat/widgets/reaction/reaction_hero_dialog_route.dart';
 import 'package:whitenoise/ui/chat/widgets/reaction/reactions_dialog_widget.dart';
 import 'package:whitenoise/ui/chat/widgets/status_message_item_widget.dart';
+
+import '../../domain/dummy_data/dummy_messages.dart';
 import '../core/themes/assets.dart';
 import '../core/themes/colors.dart';
-import '../../domain/dummy_data/dummy_messages.dart';
-import 'package:go_router/go_router.dart';
-import 'package:whitenoise/routing/routes.dart';
 
 class GroupchatScreen extends StatefulWidget {
   const GroupchatScreen({super.key});
@@ -25,6 +27,7 @@ class GroupchatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<GroupchatScreen> {
   late final List<MessageModel> _messages;
+
   void showEmojiBottomSheet({required MessageModel message}) {
     showModalBottomSheet(
       context: context,
@@ -178,7 +181,8 @@ class _ChatScreenState extends State<GroupchatScreen> {
                             HeroDialogRoute(
                               builder: (context) {
                                 return ReactionsDialogWidget(
-                                  id: message.id, // unique id for message
+                                  id: message.id,
+                                  // unique id for message
                                   menuItems:
                                       message.isMe
                                           ? DefaultData.myMessageMenuItems
@@ -187,7 +191,8 @@ class _ChatScreenState extends State<GroupchatScreen> {
                                     isGroupMessage: true,
                                     message: message,
                                     messageIndex: index,
-                                  ), // message widget
+                                  ),
+                                  // message widget
                                   onReactionTap: (reaction) {
                                     if (reaction == '⋯') {
                                       //'➕'
@@ -202,7 +207,9 @@ class _ChatScreenState extends State<GroupchatScreen> {
                                     }
                                   },
                                   onContextMenuTap: (menuItem) {
-                                    print('menu item: $menuItem');
+                                    if (kDebugMode) {
+                                      print('menu item: $menuItem');
+                                    }
                                     // handle context menu item
                                   },
                                   // align widget to the right for my message and to the left for contact message

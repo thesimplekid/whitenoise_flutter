@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:whitenoise/routing/routes.dart';
 import 'package:whitenoise/config/providers/auth_provider.dart';
-import 'package:whitenoise/ui/auth_flow/welcome_screen.dart';
-import 'package:whitenoise/ui/auth_flow/login_screen.dart';
-import 'package:whitenoise/ui/auth_flow/info_screen.dart';
+import 'package:whitenoise/routing/routes.dart';
 import 'package:whitenoise/ui/auth_flow/create_profile_screen.dart';
+import 'package:whitenoise/ui/auth_flow/info_screen.dart';
 import 'package:whitenoise/ui/auth_flow/key_created_screen.dart';
 import 'package:whitenoise/ui/auth_flow/logged_screen.dart';
-import 'package:whitenoise/ui/contact_list/chat_list_screen.dart';
+import 'package:whitenoise/ui/auth_flow/login_screen.dart';
+import 'package:whitenoise/ui/auth_flow/welcome_screen.dart';
 import 'package:whitenoise/ui/chat/chat_screen.dart';
 import 'package:whitenoise/ui/chat/groupchat_screen.dart';
+import 'package:whitenoise/ui/contact_list/chat_list_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -75,7 +75,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) {
               final contactId = state.pathParameters['id']!;
               return Scaffold(
-                body: Center(child: Text('Contact Detail: ' + contactId)),
+                body: Center(child: Text('Contact Detail: $contactId')),
               );
             },
           ),
@@ -88,7 +88,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: ':id',
             builder: (context, state) {
-              final chatId = state.pathParameters['id']!;
+              // final chatId = state.pathParameters['id']!;
               // TODO: Pass chatData via state.extra if needed
               return ChatScreen(); // TODO: Pass chatId to ChatScreen if/when supported
             },

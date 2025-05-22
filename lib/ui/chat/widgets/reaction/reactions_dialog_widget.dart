@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:whitenoise/ui/chat/widgets/reaction/reaction_default_data.dart';
@@ -87,7 +88,7 @@ class _ReactionsDialogWidgetState extends State<ReactionsDialogWidget> {
         child: Container(
           width: MediaQuery.of(context).size.width * widget.menuItemsWidth,
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.background,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Column(
@@ -111,7 +112,7 @@ class _ReactionsDialogWidgetState extends State<ReactionsDialogWidget> {
                           Future.delayed(
                             const Duration(milliseconds: 500),
                           ).whenComplete(() {
-                            if (!mounted) return;
+                            if (!context.mounted) return;
                             Navigator.of(context).pop();
                             widget.onContextMenuTap(item);
                           });
@@ -176,7 +177,7 @@ class _ReactionsDialogWidgetState extends State<ReactionsDialogWidget> {
         child: Container(
           padding: const EdgeInsets.all(5),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.background,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -201,6 +202,7 @@ class _ReactionsDialogWidgetState extends State<ReactionsDialogWidget> {
                         const Duration(milliseconds: 500),
                       ).whenComplete(() {
                         // pop the dialog
+                        if (!context.mounted) return;
                         Navigator.of(context).pop();
                         widget.onReactionTap(reaction);
                       });
