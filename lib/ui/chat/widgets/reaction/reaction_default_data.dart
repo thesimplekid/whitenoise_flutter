@@ -18,7 +18,6 @@ class DefaultData {
   static const List<MenuItem> menuItems = [reply, forward, copy, delete];
 
   static const List<MenuItem> myMessageMenuItems = [
-    reply,
     forward,
     edit,
     copy,
