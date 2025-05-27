@@ -4,7 +4,7 @@ import 'package:gap/gap.dart';
 import 'package:whitenoise/ui/core/themes/colors.dart';
 import 'package:whitenoise/ui/core/themes/assets.dart';
 import 'package:whitenoise/ui/core/ui/custom_bottom_sheet.dart';
-import 'package:whitenoise/ui/core/ui/custom_button.dart';
+import 'package:whitenoise/ui/core/ui/custom_filled_button.dart';
 
 class ChatInvitationSheet extends StatelessWidget {
   final String name;
@@ -33,7 +33,7 @@ class ChatInvitationSheet extends StatelessWidget {
     return CustomBottomSheet.show(
       context: context,
       title: 'Invitation to join secure chat',
-      heightFactor: 0.55,
+      heightFactor: 0.65,
       backgroundColor: Colors.white,
       blurBackground: true,
       blurSigma: 8.0,
@@ -92,7 +92,7 @@ class ChatInvitationSheet extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        CustomButton(
+        CustomFilledButton(
           buttonType: ButtonType.secondary,
           onPressed: () {
             Navigator.pop(context);
@@ -102,7 +102,7 @@ class ChatInvitationSheet extends StatelessWidget {
           },
           title: 'Decline',
         ),
-        CustomButton(
+        CustomFilledButton(
           onPressed: () {
             Navigator.pop(context);
             if (onAccept != null) {

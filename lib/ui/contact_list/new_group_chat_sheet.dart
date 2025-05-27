@@ -5,7 +5,7 @@ import 'package:whitenoise/domain/models/contact_model.dart';
 import 'package:whitenoise/ui/contact_list/group_chat_details_sheet.dart';
 import 'package:whitenoise/ui/contact_list/widgets/contact_list_tile.dart';
 import 'package:whitenoise/ui/core/ui/custom_bottom_sheet.dart';
-import 'package:whitenoise/ui/core/ui/custom_button.dart';
+import 'package:whitenoise/ui/core/ui/custom_filled_button.dart';
 import 'package:whitenoise/ui/core/ui/custom_textfield.dart';
 
 class NewGroupChatSheet extends StatefulWidget {
@@ -100,20 +100,16 @@ class _NewGroupChatSheetState extends State<NewGroupChatSheet> {
             },
           ),
         ),
-        SafeArea(
-          child: CustomButton(
-            onPressed:
-                _selectedContacts.isNotEmpty
-                    ? () {
-                      Navigator.pop(context);
-                      GroupChatDetailsSheet.show(
-                        context: context,
-                        selectedContacts: _selectedContacts.toList(),
-                      );
-                    }
-                    : null,
-            title: 'Continue',
-          ),
+        CustomFilledButton(
+          onPressed:
+              _selectedContacts.isNotEmpty
+                  ? () {
+                    Navigator.pop(context);
+                    GroupChatDetailsSheet.show(context: context, selectedContacts: _selectedContacts.toList());
+                  }
+                  : null,
+          title: 'Continue',
+          bottomPadding: 16.h,
         ),
       ],
     );
