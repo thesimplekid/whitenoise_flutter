@@ -107,10 +107,18 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  void _sendNewMessage(MessageModel newMessage) {
+void _sendNewMessageOrEdit(MessageModel msg, bool isEditing) {
     setState(() {
-      messages.insert(0, newMessage);
+      if (isEditing) {
+        final index = messages.indexWhere((m) => m.id == msg.id);
+        if (index != -1) {
+          messages[index] = msg;
+        }
+      } else {
+        messages.insert(0, msg);
+      }
     });
+  
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollController.animateTo(
         _scrollController.position.minScrollExtent,
@@ -124,6 +132,13 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       _replyingTo = message;
       _editingMessage = null;
+    });
+  }
+
+  void _handleEdit(MessageModel message) {
+    setState(() {
+      _editingMessage = message;
+      _replyingTo = null;
     });
   }
 
@@ -187,7 +202,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                   final message = messages[index];
                   return GestureDetector(
-                    onLongPress: () => _showReactionDialog(message, index),
+                    onTap: () => _showReactionDialog(message, index),
                     child: Hero(
                       tag: message.id,
                       child: MessageWidget(
@@ -208,7 +223,7 @@ class _ChatScreenState extends State<ChatScreen> {
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
               child: ChatInput(
                 currentUser: currentUser,
-                onSend: _sendNewMessage,
+                onSend: _sendNewMessageOrEdit,
                 padding: EdgeInsets.zero,
                 replyingTo: _replyingTo,
                 editingMessage: _editingMessage,
@@ -245,6 +260,8 @@ class _ChatScreenState extends State<ChatScreen> {
             onContextMenuTap: (menuItem) {
               if (menuItem.label == 'Reply') {
                 _handleReply(message);
+              } else if (menuItem.label == 'Edit') {
+                _handleEdit(message);
               }
             },
             widgetAlignment: message.isMe ? Alignment.centerRight : Alignment.centerLeft,

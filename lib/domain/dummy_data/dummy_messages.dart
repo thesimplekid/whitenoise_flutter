@@ -180,7 +180,7 @@ final List<MessageModel> messages = [
 
   // Image message
   MessageModel(
-    id: '4',
+    id: '5',
     type: MessageType.image,
     createdAt: DateTime.now().subtract(const Duration(minutes: 16)),
     sender: marekContact,
@@ -210,7 +210,7 @@ final List<MessageModel> messages = [
     status: MessageStatus.read,
   ),
   MessageModel(
-    id: '1',
+    id: '2',
     content: 'Hi there',
     type: MessageType.text,
     createdAt: DateTime.now().subtract(const Duration(minutes: 19)),
