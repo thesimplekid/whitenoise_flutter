@@ -13,6 +13,7 @@ import 'package:whitenoise/ui/chat/widgets/reaction/reaction_default_data.dart';
 import 'package:whitenoise/ui/chat/widgets/reaction/reaction_hero_dialog_route.dart';
 import 'package:whitenoise/ui/chat/widgets/reaction/reactions_dialog_widget.dart';
 import 'package:whitenoise/ui/chat/widgets/status_message_item_widget.dart';
+import 'package:flutter/services.dart';
 
 import '../../routing/routes.dart';
 import '../core/themes/assets.dart';
@@ -38,6 +39,9 @@ class _ChatScreenState extends State<ChatScreen> {
     publicKey: 'current_public_key',
   );
 
+  MessageModel? _replyingTo;
+  MessageModel? _editingMessage;
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +49,14 @@ class _ChatScreenState extends State<ChatScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollController.jumpTo(_scrollController.position.minScrollExtent);
     });
+
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light, // for Android
+        statusBarBrightness: Brightness.dark, // for iOS
+      ),
+    );
   }
 
   @override
@@ -108,6 +120,21 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  void _handleReply(MessageModel message) {
+    setState(() {
+      _replyingTo = message;
+      _editingMessage = null;
+    });
+  }
+
+  void _cancelReply() {
+    setState(() => _replyingTo = null);
+  }
+
+  void _cancelEdit() {
+    setState(() => _editingMessage = null);
+  }
+
   List<MessageModel> _updateMessage(MessageModel updatedMessage) {
     return messages.map((msg) {
       return msg.id == updatedMessage.id ? updatedMessage : msg;
@@ -126,13 +153,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Ensure status bar has light icons on this dark background
-    // SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    //   statusBarColor: Colors.transparent,
-    //   statusBarIconBrightness: Brightness.light, // for Android
-    //   statusBarBrightness: Brightness.dark, // for iOS
-    // ));
-
     return Scaffold(
       backgroundColor: AppColors.glitch50,
       appBar: AppBar(
@@ -187,14 +207,13 @@ class _ChatScreenState extends State<ChatScreen> {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
               child: ChatInput(
-                currentUser: User(
-                  id: 'current_user_id',
-                  name: 'You',
-                  email: 'current@user.com',
-                  publicKey: 'current_public_key',
-                ),
+                currentUser: currentUser,
                 onSend: _sendNewMessage,
                 padding: EdgeInsets.zero,
+                replyingTo: _replyingTo,
+                editingMessage: _editingMessage,
+                onCancelReply: _cancelReply,
+                onCancelEdit: _cancelEdit,
               ),
             ),
           ],
@@ -224,7 +243,9 @@ class _ChatScreenState extends State<ChatScreen> {
               }
             },
             onContextMenuTap: (menuItem) {
-              // Handle context menu actions
+              if (menuItem.label == 'Reply') {
+                _handleReply(message);
+              }
             },
             widgetAlignment: message.isMe ? Alignment.centerRight : Alignment.centerLeft,
           );
