@@ -107,7 +107,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-void _sendNewMessageOrEdit(MessageModel msg, bool isEditing) {
+  void _sendNewMessageOrEdit(MessageModel msg, bool isEditing) {
     setState(() {
       if (isEditing) {
         final index = messages.indexWhere((m) => m.id == msg.id);
@@ -118,7 +118,7 @@ void _sendNewMessageOrEdit(MessageModel msg, bool isEditing) {
         messages.insert(0, msg);
       }
     });
-  
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollController.animateTo(
         _scrollController.position.minScrollExtent,
@@ -201,7 +201,9 @@ void _sendNewMessageOrEdit(MessageModel msg, bool isEditing) {
                   }
 
                   final message = messages[index];
-                  return GestureDetector(
+                  return _SwipeToReplyWidget(
+                    message: message,
+                    onReply: () => _handleReply(message),
                     onTap: () => _showReactionDialog(message, index),
                     child: Hero(
                       tag: message.id,
@@ -314,6 +316,118 @@ void _sendNewMessageOrEdit(MessageModel msg, bool isEditing) {
           Gap(40.h),
         ],
       ),
+    );
+  }
+}
+
+class _SwipeToReplyWidget extends StatefulWidget {
+  final MessageModel message;
+  final VoidCallback onReply;
+  final VoidCallback onTap;
+  final Widget child;
+
+  const _SwipeToReplyWidget({
+    required this.message,
+    required this.onReply,
+    required this.onTap,
+    required this.child,
+  });
+
+  @override
+  State<_SwipeToReplyWidget> createState() => _SwipeToReplyWidgetState();
+}
+
+class _SwipeToReplyWidgetState extends State<_SwipeToReplyWidget> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  double _dragExtent = 0.0;
+  final double _dragThreshold = 60.0;
+  bool _showReplyIcon = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _controller.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleDragStart(DragStartDetails details) {
+    setState(() {
+      _showReplyIcon = true;
+    });
+  }
+
+  void _handleDragUpdate(DragUpdateDetails details) {
+    // For messages from others (left side), allow right swipe
+    // For my messages (right side), allow left swipe
+    if ((!widget.message.isMe && details.delta.dx > 0) || (widget.message.isMe && details.delta.dx < 0)) {
+      setState(() {
+        // For my messages, we need to track negative drag extent
+        if (widget.message.isMe) {
+          _dragExtent -= details.delta.dx; // Negative for right-aligned messages
+        } else {
+          _dragExtent += details.delta.dx; // Positive for left-aligned messages
+        }
+        _dragExtent = _dragExtent.clamp(0.0, _dragThreshold);
+      });
+    }
+  }
+
+  void _handleDragEnd(DragEndDetails details) {
+    if (_dragExtent >= _dragThreshold * 0.5) {
+      widget.onReply();
+    }
+
+    _controller.value = 0.0;
+    setState(() {
+      _dragExtent = 0.0;
+      _showReplyIcon = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dragOffset = widget.message.isMe ? -_dragExtent : _dragExtent;
+
+    return Stack(
+      children: [
+        if (_showReplyIcon)
+          Positioned(
+            left: widget.message.isMe ? null : 8.w,
+            right: widget.message.isMe ? 8.w : null,
+            top: 0,
+            // Adjust bottom to account for reactions
+            bottom: widget.message.reactions.isNotEmpty ? 18.h : 0,
+            child: Align(
+              alignment: Alignment.center,
+              child: Icon(
+                CarbonIcons.reply,
+                color: AppColors.glitch950,
+                size: 14.w,
+              ),
+            ),
+          ),
+        GestureDetector(
+          onTap: widget.onTap,
+          onHorizontalDragStart: _handleDragStart,
+          onHorizontalDragUpdate: _handleDragUpdate,
+          onHorizontalDragEnd: _handleDragEnd,
+          child: Transform.translate(
+            offset: Offset(dragOffset, 0),
+            child: widget.child,
+          ),
+        ),
+      ],
     );
   }
 }
