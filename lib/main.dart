@@ -10,6 +10,11 @@ import 'package:whitenoise/ui/core/themes/colors.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
   // Logging
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((record) {
@@ -18,10 +23,10 @@ Future<void> main() async {
   final log = Logger('Whitenoise');
 
   final container = ProviderContainer();
-  final auth = container.read(authProvider);
+  final authNotifier = container.read(authProvider.notifier);
 
   try {
-    await auth.initialize();
+    await authNotifier.initialize();
     log.info('Whitenoise initialized via authProvider');
   } catch (e) {
     log.severe('Initialization failed: $e');
@@ -30,7 +35,7 @@ Future<void> main() async {
   runApp(
     UncontrolledProviderScope(
       container: container,
-      child: const ProviderScope(child: MyApp()),
+      child: const MyApp(),
     ),
   );
 }
@@ -42,19 +47,6 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final width = MediaQuery.of(context).size.width;
     final router = ref.watch(routerProvider);
-
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
-      ),
-    );
 
     return ScreenUtilInit(
       designSize: width > 600 ? const Size(600, 1024) : const Size(390, 844),

@@ -28,16 +28,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return;
     }
 
-    final auth = ref.read(authProvider);
-    await auth.loginWithKey(key);
+    final authNotifier = ref.read(authProvider.notifier);
+    final authState = ref.read(authProvider);
+    await authNotifier.loginWithKey(key);
 
     if (!mounted) return;
 
-    if (auth.isAuthenticated && auth.error == null) {
+    if (authState.isAuthenticated && authState.error == null) {
       context.go(Routes.chats);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.error ?? 'Login failed')),
+        SnackBar(content: Text(authState.error ?? 'Login failed')),
       );
     }
   }
@@ -68,7 +69,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = ref.watch(authProvider);
+    final authState = ref.watch(authProvider);
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -177,7 +178,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       bottomNavigationBar: SafeArea(
         top: false,
         child:
-            auth.isLoading
+            authState.isLoading
                 ? const Padding(
                   padding: EdgeInsets.all(16),
                   child: Center(

@@ -2,28 +2,19 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
-
-/// Rust-generated bridge API
+import 'package:whitenoise/config/states/auth_state.dart';
 import 'package:whitenoise/src/rust/api.dart';
 import 'package:whitenoise/src/rust/frb_generated.dart';
 
-class AuthState with ChangeNotifier {
-  /// ---------- Private fields ----------
-  bool _isAuthenticated = false;
-  bool _isLoading = false;
-  String? _error;
-  Whitenoise? _whitenoise;
-
-  /// ---------- Public getters ----------
-  bool get isAuthenticated => _isAuthenticated;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-  Whitenoise? get whitenoise => _whitenoise;
+class AuthNotifier extends Notifier<AuthState> {
+  @override
+  AuthState build() {
+    return const AuthState();
+  }
 
   /// Initialize Whitenoise and Rust backend
   Future<void> initialize() async {
-    _setLoading(true);
-    _error = null;
+    state = state.copyWith(isLoading: true, error: null);
 
     try {
       // 1. Initialize Rust library
@@ -42,116 +33,115 @@ class AuthState with ChangeNotifier {
         dataDir: dataDir,
         logsDir: logsDir,
       );
-      _whitenoise = await initializeWhitenoise(config: config);
+      final whitenoise = await initializeWhitenoise(config: config);
+
+      state = state.copyWith(whitenoise: whitenoise);
 
       /// 4. Auto-login if an account is already active
-      final active = await getActiveAccount(whitenoise: _whitenoise!);
-      _isAuthenticated = active != null;
+      final active = await getActiveAccount(whitenoise: state.whitenoise!);
+      state = state.copyWith(isAuthenticated: active != null);
     } catch (e, st) {
-      _error = e.toString();
       debugPrintStack(label: 'AuthState.initialize', stackTrace: st);
+      state = state.copyWith(error: e.toString());
     } finally {
-      _setLoading(false);
+      state = state.copyWith(isLoading: false);
     }
   }
 
   /// Create a new account and set it as active
   Future<void> createAccount() async {
-    if (_whitenoise == null) {
-      _error = 'Whitenoise is not initialized';
-      notifyListeners();
+    if (state.whitenoise == null) {
+      await initialize();
+    }
+
+    if (state.whitenoise == null) {
+      final previousError = state.error;
+      state = state.copyWith(
+        error:
+            'Could not initialize Whitenoise: $previousError, account creation failed.',
+      );
       return;
     }
 
-    _setLoading(true);
-    _error = null;
+    state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final account = await createIdentity(whitenoise: _whitenoise!);
-      await updateActiveAccount(whitenoise: _whitenoise!, account: account);
-      _isAuthenticated = true;
+      await createIdentity(whitenoise: state.whitenoise!);
+      state = state.copyWith(isAuthenticated: true);
     } catch (e, st) {
-      _error = e.toString();
       debugPrintStack(label: 'AuthState.createAccount', stackTrace: st);
+      state = state.copyWith(error: e.toString());
     } finally {
-      _setLoading(false);
+      state = state.copyWith(isLoading: false);
     }
   }
 
   /// Login with a private key (nsec or hex)
   Future<void> loginWithKey(String nsecOrPrivkey) async {
-    if (_whitenoise == null) {
-      _error = 'Whitenoise is not initialized';
-      notifyListeners();
+    if (state.whitenoise == null) {
+      await initialize();
       return;
     }
 
-    _setLoading(true);
-    _error = null;
+    state = state.copyWith(isLoading: true, error: null);
 
     try {
       /// 1. Perform login using Rust API
       final account = await login(
-        whitenoise: _whitenoise!,
+        whitenoise: state.whitenoise!,
         nsecOrHexPrivkey: nsecOrPrivkey.trim(),
       );
 
       /// 2. Mark the account as active
-      await updateActiveAccount(whitenoise: _whitenoise!, account: account);
-      _isAuthenticated = true;
+      await updateActiveAccount(
+        whitenoise: state.whitenoise!,
+        account: account,
+      );
+      state = state.copyWith(isAuthenticated: true);
     } catch (e, st) {
-      _error = e.toString();
-      _isAuthenticated = false;
+      state = state.copyWith(error: e.toString());
       debugPrintStack(label: 'AuthState.loginWithKey', stackTrace: st);
     } finally {
-      _setLoading(false);
+      state = state.copyWith(isLoading: false);
     }
   }
 
   /// Get the currently active account (if any)
   Future<Account?> getCurrentActiveAccount() async {
-    if (_whitenoise == null) return null;
-
+    if (state.whitenoise == null) {
+      await initialize();
+    }
     try {
-      return await getActiveAccount(whitenoise: _whitenoise!);
+      return await getActiveAccount(whitenoise: state.whitenoise!);
     } catch (e) {
-      _error = e.toString();
-      notifyListeners();
+      state = state.copyWith(error: e.toString());
       return null;
     }
   }
 
   /// Logout the currently active account (if any)
   Future<void> logoutCurrentAccount() async {
-    if (_whitenoise == null) {
-      _isAuthenticated = false;
-      notifyListeners();
+    if (state.whitenoise == null) {
+      state = state.copyWith(isAuthenticated: false);
       return;
     }
 
-    _setLoading(true);
-    _error = null;
+    state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final active = await getActiveAccount(whitenoise: _whitenoise!);
+      final active = await getActiveAccount(whitenoise: state.whitenoise!);
       if (active != null) {
-        await logout(whitenoise: _whitenoise!, account: active);
+        await logout(whitenoise: state.whitenoise!, account: active);
       }
     } catch (e, st) {
-      _error = e.toString();
+      state = state.copyWith(error: e.toString());
       debugPrintStack(label: 'AuthState.logoutCurrentAccount', stackTrace: st);
     } finally {
-      _isAuthenticated = false;
-      _setLoading(false);
+      state = state.copyWith(isAuthenticated: false, isLoading: false);
     }
-  }
-
-  /// Helper to update loading state and notify listeners
-  void _setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
   }
 }
 
-/// Riverpod provider for authentication state
-final authProvider = ChangeNotifierProvider<AuthState>((ref) => AuthState());
+final authProvider = NotifierProvider<AuthNotifier, AuthState>(
+  AuthNotifier.new,
+);

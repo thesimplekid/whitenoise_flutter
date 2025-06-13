@@ -104,10 +104,11 @@ final nostrKeysProvider = ChangeNotifierProvider<NostrKeysState>((ref) {
 
 // Helper provider that automatically exports nsec when we have an account
 final currentAccountProvider = FutureProvider<Account?>((ref) async {
-  final auth = ref.watch(authProvider);
+  final authNotifier = ref.watch(authProvider.notifier);
+  final authState = ref.watch(authProvider);
 
-  if (auth.whitenoise != null) {
-    return await auth.getCurrentActiveAccount();
+  if (authState.whitenoise != null) {
+    return await authNotifier.getCurrentActiveAccount();
   }
 
   return null;

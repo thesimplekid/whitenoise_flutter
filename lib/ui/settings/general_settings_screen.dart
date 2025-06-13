@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supa_carbon_icons/supa_carbon_icons.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whitenoise/config/providers/auth_provider.dart';
 import 'package:whitenoise/domain/dummy_data/dummy_contacts.dart';
 import 'package:whitenoise/domain/models/contact_model.dart';
@@ -26,7 +26,8 @@ class _GeneralSettingsScreenState extends ConsumerState<GeneralSettingsScreen> {
   ContactModel _currentProfile = dummyContacts.first;
 
   Future<void> _handleLogout() async {
-    final auth = ref.read(authProvider);
+    final authNotifier = ref.read(authProvider.notifier);
+    final authState = ref.read(authProvider);
 
     showDialog(
       context: context,
@@ -34,14 +35,14 @@ class _GeneralSettingsScreenState extends ConsumerState<GeneralSettingsScreen> {
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
 
-    await auth.logoutCurrentAccount();
+    await authNotifier.logoutCurrentAccount();
 
     if (!mounted) return;
     Navigator.of(context).pop();
 
-    if (auth.error != null) {
+    if (authState.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.error!)),
+        SnackBar(content: Text(authState.error!)),
       );
       return;
     }

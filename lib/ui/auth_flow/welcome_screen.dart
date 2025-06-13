@@ -17,26 +17,27 @@ class WelcomeScreen extends ConsumerStatefulWidget {
 }
 
 class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
-  Future<void> _handleCreateAccount() async {
-    final auth = ref.read(authProvider);
-    await auth.initialize();
+  Future<void> _handleCreateAccount(BuildContext context) async {
+    final authNotifier = ref.read(authProvider.notifier);
 
-    await auth.createAccount();
+    await authNotifier.initialize();
+    await authNotifier.createAccount();
 
-    if (!mounted) return;
-
-    if (auth.isAuthenticated && auth.error == null) {
+    final authState = ref.read(authProvider);
+    if (authState.isAuthenticated && authState.error == null) {
+      if (!context.mounted) return;
       context.go('/onboarding');
     } else {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.error ?? 'Unknown error')),
+        SnackBar(content: Text(authState.error ?? 'Unknown error')),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final auth = ref.watch(authProvider);
+    final authState = ref.watch(authProvider);
 
     return Stack(
       children: [
@@ -136,8 +137,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                   title: 'Login',
                 ),
                 Gap(16.h),
-
-                auth.isLoading
+                authState.isLoading
                     ? const Padding(
                       padding: EdgeInsets.symmetric(vertical: 16),
                       child: Center(
@@ -145,7 +145,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                       ),
                     )
                     : CustomFilledButton(
-                      onPressed: _handleCreateAccount,
+                      onPressed: () => _handleCreateAccount(context),
                       title: 'Sign Up',
                     ),
               ],

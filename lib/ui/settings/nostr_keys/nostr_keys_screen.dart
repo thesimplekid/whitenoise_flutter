@@ -37,23 +37,23 @@ class _NostrKeysScreenState extends ConsumerState<NostrKeysScreen> {
 
   /// Load both public and private keys when the screen initializes
   Future<void> _loadKeys() async {
-    final auth = ref.read(authProvider);
+    final authNotifier = ref.read(authProvider.notifier);
+    final authState = ref.read(authProvider);
     final nostrKeys = ref.read(nostrKeysProvider);
 
-    if (auth.whitenoise != null) {
+    if (authState.whitenoise != null) {
       // Get the active account
-      final account = await auth.getCurrentActiveAccount();
-
+      final account = await authNotifier.getCurrentActiveAccount();
       if (account != null) {
         // Load the public key first (safe to display) using the new exportAccountNpub method
         await nostrKeys.loadPublicKey(
-          whitenoise: auth.whitenoise!,
+          whitenoise: authState.whitenoise!,
           account: account,
         );
 
         // Export the nsec (only when needed)
         await nostrKeys.exportNsec(
-          whitenoise: auth.whitenoise!,
+          whitenoise: authState.whitenoise!,
           account: account,
         );
       }
