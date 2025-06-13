@@ -20,6 +20,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   Future<void> _handleCreateAccount() async {
     final auth = ref.read(authProvider);
     await auth.initialize();
+
     await auth.createAccount();
 
     if (!mounted) return;
@@ -135,6 +136,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                   title: 'Login',
                 ),
                 Gap(16.h),
+
                 auth.isLoading
                     ? const Padding(
                       padding: EdgeInsets.symmetric(vertical: 16),
