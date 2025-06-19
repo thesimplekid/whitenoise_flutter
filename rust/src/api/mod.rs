@@ -1,4 +1,6 @@
 // Re-export everything from the whitenoise crate
+use serde_json::Value;
+use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::path::Path;
 pub use whitenoise::{
@@ -28,6 +30,21 @@ pub struct AccountData {
     pub settings: AccountSettings,
     pub onboarding: OnboardingState,
     pub last_synced: u64,
+}
+
+#[frb(mirror(Metadata))]
+#[derive(Debug, Clone)]
+pub struct _Metadata {
+    pub name: Option<String>,
+    pub display_name: Option<String>,
+    pub about: Option<String>,
+    pub picture: Option<String>,
+    pub banner: Option<String>,
+    pub website: Option<String>,
+    pub nip05: Option<String>,
+    pub lud06: Option<String>,
+    pub lud16: Option<String>,
+    pub custom: BTreeMap<String, Value>,
 }
 
 // Mirror structs for simple types that can be used directly

@@ -7,7 +7,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 import 'frb_generated.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 Future<RelayType> relayTypeNostr() =>
     RustLib.instance.api.crateApiRelayTypeNostr();
@@ -209,11 +209,54 @@ Future<void> updateContacts({
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Account>>
 abstract class Account implements RustOpaqueInterface {}
 
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BTreeMap < String , Value >>>
+abstract class BTreeMapStringValue implements RustOpaqueInterface {}
+
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Event>>
 abstract class Event implements RustOpaqueInterface {}
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Metadata>>
-abstract class Metadata implements RustOpaqueInterface {}
+abstract class Metadata implements RustOpaqueInterface {
+  String? get about;
+
+  String? get banner;
+
+  BTreeMapStringValue get custom;
+
+  String? get displayName;
+
+  String? get lud06;
+
+  String? get lud16;
+
+  String? get name;
+
+  String? get nip05;
+
+  String? get picture;
+
+  String? get website;
+
+  set about(String? about);
+
+  set banner(String? banner);
+
+  set custom(BTreeMapStringValue custom);
+
+  set displayName(String? displayName);
+
+  set lud06(String? lud06);
+
+  set lud16(String? lud16);
+
+  set name(String? name);
+
+  set nip05(String? nip05);
+
+  set picture(String? picture);
+
+  set website(String? website);
+}
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PublicKey>>
 abstract class PublicKey implements RustOpaqueInterface {}
