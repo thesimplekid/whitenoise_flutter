@@ -64,7 +64,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.10.0';
 
   @override
-  int get rustContentHash => 1029362738;
+  int get rustContentHash => -1558036423;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -164,7 +164,7 @@ abstract class RustLibApi extends BaseApi {
   });
 
   Future<void> crateApiAddContact({
-    required Account account,
+    required PublicKey pubkey,
     required PublicKey contactPubkey,
   });
 
@@ -185,7 +185,7 @@ abstract class RustLibApi extends BaseApi {
   });
 
   Future<GroupData> crateApiCreateGroup({
-    required Account creatorAccount,
+    required PublicKey creatorPubkey,
     required List<PublicKey> memberPubkeys,
     required List<PublicKey> adminPubkeys,
     required String groupName,
@@ -201,9 +201,9 @@ abstract class RustLibApi extends BaseApi {
 
   Future<void> crateApiDeleteAllData();
 
-  Future<String> crateApiExportAccountNpub({required Account account});
+  Future<String> crateApiExportAccountNpub({required PublicKey pubkey});
 
-  Future<String> crateApiExportAccountNsec({required Account account});
+  Future<String> crateApiExportAccountNsec({required PublicKey pubkey});
 
   Future<AccountData> crateApiFetchAccount({required PublicKey pubkey});
 
@@ -214,16 +214,16 @@ abstract class RustLibApi extends BaseApi {
   });
 
   Future<List<PublicKey>> crateApiFetchGroupAdmins({
-    required Account account,
+    required PublicKey pubkey,
     required GroupId groupId,
   });
 
   Future<List<PublicKey>> crateApiFetchGroupMembers({
-    required Account account,
+    required PublicKey pubkey,
     required GroupId groupId,
   });
 
-  Future<List<GroupData>> crateApiFetchGroups({required Account account});
+  Future<List<GroupData>> crateApiFetchGroups({required PublicKey pubkey});
 
   Future<Event?> crateApiFetchKeyPackage({required PublicKey pubkey});
 
@@ -237,10 +237,6 @@ abstract class RustLibApi extends BaseApi {
     required PublicKey pubkey,
     required RelayType relayType,
   });
-
-  Future<AccountData> crateApiGetAccountData({required Account account});
-
-  Future<String> crateApiGetRelayUrlString({required RelayUrl relayUrl});
 
   Future<GroupId> crateApiGroupIdFromString({required String hexString});
 
@@ -265,22 +261,24 @@ abstract class RustLibApi extends BaseApi {
   Future<RelayUrl> crateApiRelayUrlFromString({required String url});
 
   Future<void> crateApiRemoveContact({
-    required Account account,
+    required PublicKey pubkey,
     required PublicKey contactPubkey,
   });
 
+  Future<String> crateApiStringFromRelayUrl({required RelayUrl relayUrl});
+
   Future<void> crateApiUpdateContacts({
-    required Account account,
+    required PublicKey pubkey,
     required List<PublicKey> contactPubkeys,
   });
 
   Future<void> crateApiUpdateMetadata({
     required MetadataData metadata,
-    required Account account,
+    required PublicKey pubkey,
   });
 
   Future<void> crateApiUpdateRelays({
-    required Account account,
+    required PublicKey pubkey,
     required RelayType relayType,
     required List<RelayUrl> relays,
   });
@@ -1028,15 +1026,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @override
   Future<void> crateApiAddContact({
-    required Account account,
+    required PublicKey pubkey,
     required PublicKey contactPubkey,
   }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerAccount(
-            account,
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPublicKey(
+            pubkey,
             serializer,
           );
           sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPublicKey(
@@ -1056,7 +1054,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWhitenoiseError,
         ),
         constMeta: kCrateApiAddContactConstMeta,
-        argValues: [account, contactPubkey],
+        argValues: [pubkey, contactPubkey],
         apiImpl: this,
       ),
     );
@@ -1064,7 +1062,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiAddContactConstMeta => const TaskConstMeta(
     debugName: 'add_contact',
-    argNames: ['account', 'contactPubkey'],
+    argNames: ['pubkey', 'contactPubkey'],
   );
 
   @override
@@ -1246,7 +1244,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @override
   Future<GroupData> crateApiCreateGroup({
-    required Account creatorAccount,
+    required PublicKey creatorPubkey,
     required List<PublicKey> memberPubkeys,
     required List<PublicKey> adminPubkeys,
     required String groupName,
@@ -1256,8 +1254,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerAccount(
-            creatorAccount,
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPublicKey(
+            creatorPubkey,
             serializer,
           );
           sse_encode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPublicKey(
@@ -1284,7 +1282,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         ),
         constMeta: kCrateApiCreateGroupConstMeta,
         argValues: [
-          creatorAccount,
+          creatorPubkey,
           memberPubkeys,
           adminPubkeys,
           groupName,
@@ -1298,7 +1296,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiCreateGroupConstMeta => const TaskConstMeta(
     debugName: 'create_group',
     argNames: [
-      'creatorAccount',
+      'creatorPubkey',
       'memberPubkeys',
       'adminPubkeys',
       'groupName',
@@ -1400,13 +1398,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: 'delete_all_data', argNames: []);
 
   @override
-  Future<String> crateApiExportAccountNpub({required Account account}) {
+  Future<String> crateApiExportAccountNpub({required PublicKey pubkey}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerAccount(
-            account,
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPublicKey(
+            pubkey,
             serializer,
           );
           pdeCallFfi(
@@ -1422,7 +1420,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWhitenoiseError,
         ),
         constMeta: kCrateApiExportAccountNpubConstMeta,
-        argValues: [account],
+        argValues: [pubkey],
         apiImpl: this,
       ),
     );
@@ -1430,17 +1428,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiExportAccountNpubConstMeta => const TaskConstMeta(
     debugName: 'export_account_npub',
-    argNames: ['account'],
+    argNames: ['pubkey'],
   );
 
   @override
-  Future<String> crateApiExportAccountNsec({required Account account}) {
+  Future<String> crateApiExportAccountNsec({required PublicKey pubkey}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerAccount(
-            account,
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPublicKey(
+            pubkey,
             serializer,
           );
           pdeCallFfi(
@@ -1456,7 +1454,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWhitenoiseError,
         ),
         constMeta: kCrateApiExportAccountNsecConstMeta,
-        argValues: [account],
+        argValues: [pubkey],
         apiImpl: this,
       ),
     );
@@ -1464,7 +1462,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiExportAccountNsecConstMeta => const TaskConstMeta(
     debugName: 'export_account_nsec',
-    argNames: ['account'],
+    argNames: ['pubkey'],
   );
 
   @override
@@ -1564,15 +1562,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @override
   Future<List<PublicKey>> crateApiFetchGroupAdmins({
-    required Account account,
+    required PublicKey pubkey,
     required GroupId groupId,
   }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerAccount(
-            account,
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPublicKey(
+            pubkey,
             serializer,
           );
           sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGroupId(
@@ -1593,7 +1591,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWhitenoiseError,
         ),
         constMeta: kCrateApiFetchGroupAdminsConstMeta,
-        argValues: [account, groupId],
+        argValues: [pubkey, groupId],
         apiImpl: this,
       ),
     );
@@ -1601,20 +1599,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiFetchGroupAdminsConstMeta => const TaskConstMeta(
     debugName: 'fetch_group_admins',
-    argNames: ['account', 'groupId'],
+    argNames: ['pubkey', 'groupId'],
   );
 
   @override
   Future<List<PublicKey>> crateApiFetchGroupMembers({
-    required Account account,
+    required PublicKey pubkey,
     required GroupId groupId,
   }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerAccount(
-            account,
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPublicKey(
+            pubkey,
             serializer,
           );
           sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGroupId(
@@ -1635,7 +1633,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWhitenoiseError,
         ),
         constMeta: kCrateApiFetchGroupMembersConstMeta,
-        argValues: [account, groupId],
+        argValues: [pubkey, groupId],
         apiImpl: this,
       ),
     );
@@ -1643,17 +1641,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiFetchGroupMembersConstMeta => const TaskConstMeta(
     debugName: 'fetch_group_members',
-    argNames: ['account', 'groupId'],
+    argNames: ['pubkey', 'groupId'],
   );
 
   @override
-  Future<List<GroupData>> crateApiFetchGroups({required Account account}) {
+  Future<List<GroupData>> crateApiFetchGroups({required PublicKey pubkey}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerAccount(
-            account,
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPublicKey(
+            pubkey,
             serializer,
           );
           pdeCallFfi(
@@ -1669,14 +1667,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWhitenoiseError,
         ),
         constMeta: kCrateApiFetchGroupsConstMeta,
-        argValues: [account],
+        argValues: [pubkey],
         apiImpl: this,
       ),
     );
   }
 
   TaskConstMeta get kCrateApiFetchGroupsConstMeta =>
-      const TaskConstMeta(debugName: 'fetch_groups', argNames: ['account']);
+      const TaskConstMeta(debugName: 'fetch_groups', argNames: ['pubkey']);
 
   @override
   Future<Event?> crateApiFetchKeyPackage({required PublicKey pubkey}) {
@@ -1824,70 +1822,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
-  Future<AccountData> crateApiGetAccountData({required Account account}) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerAccount(
-            account,
-            serializer,
-          );
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 43,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_account_data,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiGetAccountDataConstMeta,
-        argValues: [account],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiGetAccountDataConstMeta =>
-      const TaskConstMeta(debugName: 'get_account_data', argNames: ['account']);
-
-  @override
-  Future<String> crateApiGetRelayUrlString({required RelayUrl relayUrl}) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRelayUrl(
-            relayUrl,
-            serializer,
-          );
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 44,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiGetRelayUrlStringConstMeta,
-        argValues: [relayUrl],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiGetRelayUrlStringConstMeta => const TaskConstMeta(
-    debugName: 'get_relay_url_string',
-    argNames: ['relayUrl'],
-  );
-
-  @override
   Future<GroupId> crateApiGroupIdFromString({required String hexString}) {
     return handler.executeNormal(
       NormalTask(
@@ -1897,7 +1831,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 45,
+            funcId: 43,
             port: port_,
           );
         },
@@ -1932,7 +1866,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 46,
+            funcId: 44,
             port: port_,
           );
         },
@@ -1967,7 +1901,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 47,
+            funcId: 45,
             port: port_,
           );
         },
@@ -1999,7 +1933,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 48,
+            funcId: 46,
             port: port_,
           );
         },
@@ -2032,7 +1966,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 49,
+            funcId: 47,
             port: port_,
           );
         },
@@ -2063,7 +1997,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 50,
+            funcId: 48,
             port: port_,
           );
         },
@@ -2095,7 +2029,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 51,
+            funcId: 49,
             port: port_,
           );
         },
@@ -2123,7 +2057,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 52,
+            funcId: 50,
             port: port_,
           );
         },
@@ -2151,7 +2085,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 53,
+            funcId: 51,
             port: port_,
           );
         },
@@ -2180,7 +2114,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 54,
+            funcId: 52,
             port: port_,
           );
         },
@@ -2204,19 +2138,93 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @override
   Future<void> crateApiRemoveContact({
-    required Account account,
+    required PublicKey pubkey,
     required PublicKey contactPubkey,
   }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerAccount(
-            account,
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPublicKey(
+            pubkey,
             serializer,
           );
           sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPublicKey(
             contactPubkey,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 53,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData:
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWhitenoiseError,
+        ),
+        constMeta: kCrateApiRemoveContactConstMeta,
+        argValues: [pubkey, contactPubkey],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiRemoveContactConstMeta => const TaskConstMeta(
+    debugName: 'remove_contact',
+    argNames: ['pubkey', 'contactPubkey'],
+  );
+
+  @override
+  Future<String> crateApiStringFromRelayUrl({required RelayUrl relayUrl}) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRelayUrl(
+            relayUrl,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 54,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiStringFromRelayUrlConstMeta,
+        argValues: [relayUrl],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiStringFromRelayUrlConstMeta => const TaskConstMeta(
+    debugName: 'string_from_relay_url',
+    argNames: ['relayUrl'],
+  );
+
+  @override
+  Future<void> crateApiUpdateContacts({
+    required PublicKey pubkey,
+    required List<PublicKey> contactPubkeys,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPublicKey(
+            pubkey,
+            serializer,
+          );
+          sse_encode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPublicKey(
+            contactPubkeys,
             serializer,
           );
           pdeCallFfi(
@@ -2231,33 +2239,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData:
               sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWhitenoiseError,
         ),
-        constMeta: kCrateApiRemoveContactConstMeta,
-        argValues: [account, contactPubkey],
+        constMeta: kCrateApiUpdateContactsConstMeta,
+        argValues: [pubkey, contactPubkeys],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiRemoveContactConstMeta => const TaskConstMeta(
-    debugName: 'remove_contact',
-    argNames: ['account', 'contactPubkey'],
+  TaskConstMeta get kCrateApiUpdateContactsConstMeta => const TaskConstMeta(
+    debugName: 'update_contacts',
+    argNames: ['pubkey', 'contactPubkeys'],
   );
 
   @override
-  Future<void> crateApiUpdateContacts({
-    required Account account,
-    required List<PublicKey> contactPubkeys,
+  Future<void> crateApiUpdateMetadata({
+    required MetadataData metadata,
+    required PublicKey pubkey,
   }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerAccount(
-            account,
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMetadataData(
+            metadata,
             serializer,
           );
-          sse_encode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPublicKey(
-            contactPubkeys,
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPublicKey(
+            pubkey,
             serializer,
           );
           pdeCallFfi(
@@ -2272,33 +2280,38 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData:
               sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWhitenoiseError,
         ),
-        constMeta: kCrateApiUpdateContactsConstMeta,
-        argValues: [account, contactPubkeys],
+        constMeta: kCrateApiUpdateMetadataConstMeta,
+        argValues: [metadata, pubkey],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiUpdateContactsConstMeta => const TaskConstMeta(
-    debugName: 'update_contacts',
-    argNames: ['account', 'contactPubkeys'],
+  TaskConstMeta get kCrateApiUpdateMetadataConstMeta => const TaskConstMeta(
+    debugName: 'update_metadata',
+    argNames: ['metadata', 'pubkey'],
   );
 
   @override
-  Future<void> crateApiUpdateMetadata({
-    required MetadataData metadata,
-    required Account account,
+  Future<void> crateApiUpdateRelays({
+    required PublicKey pubkey,
+    required RelayType relayType,
+    required List<RelayUrl> relays,
   }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerMetadataData(
-            metadata,
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPublicKey(
+            pubkey,
             serializer,
           );
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerAccount(
-            account,
+          sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRelayType(
+            relayType,
+            serializer,
+          );
+          sse_encode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRelayUrl(
+            relays,
             serializer,
           );
           pdeCallFfi(
@@ -2313,54 +2326,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData:
               sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWhitenoiseError,
         ),
-        constMeta: kCrateApiUpdateMetadataConstMeta,
-        argValues: [metadata, account],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiUpdateMetadataConstMeta => const TaskConstMeta(
-    debugName: 'update_metadata',
-    argNames: ['metadata', 'account'],
-  );
-
-  @override
-  Future<void> crateApiUpdateRelays({
-    required Account account,
-    required RelayType relayType,
-    required List<RelayUrl> relays,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerAccount(
-            account,
-            serializer,
-          );
-          sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRelayType(
-            relayType,
-            serializer,
-          );
-          sse_encode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRelayUrl(
-            relays,
-            serializer,
-          );
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 58,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_unit,
-          decodeErrorData:
-              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWhitenoiseError,
-        ),
         constMeta: kCrateApiUpdateRelaysConstMeta,
-        argValues: [account, relayType, relays],
+        argValues: [pubkey, relayType, relays],
         apiImpl: this,
       ),
     );
@@ -2368,7 +2335,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiUpdateRelaysConstMeta => const TaskConstMeta(
     debugName: 'update_relays',
-    argNames: ['account', 'relayType', 'relays'],
+    argNames: ['pubkey', 'relayType', 'relays'],
   );
 
   RustArcIncrementStrongCountFnType
