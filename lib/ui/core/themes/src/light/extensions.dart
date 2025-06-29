@@ -26,4 +26,5 @@ const lightColorsExt = AppColorsThemeExt(
   bottomSheetBarrier: LightAppColors.bottomSheetBarrier,
   surface: LightAppColors.surface,
   input: LightAppColors.input,
+  border: LightAppColors.border,
 );

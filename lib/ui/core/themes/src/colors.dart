@@ -58,6 +58,9 @@ class LightAppColors {
 
   /// textfield border
   static const input = Color(0xffe5e5e5);
+
+  /// border
+  static const border = Color(0xffE5E5E5);
 }
 
 /// Dark theme colors
@@ -119,6 +122,9 @@ class DarkAppColors {
 
   /// textfield border
   static const input = Color(0xff262626);
+
+  /// border
+  static const border = Color(0xff262626);
 }
 
 class AppColorsThemeExt extends ThemeExtension<AppColorsThemeExt> {
@@ -147,6 +153,7 @@ class AppColorsThemeExt extends ThemeExtension<AppColorsThemeExt> {
     required this.bottomSheetBarrier,
     required this.surface,
     required this.input,
+    required this.border,
   });
 
   final Color primary;
@@ -173,6 +180,7 @@ class AppColorsThemeExt extends ThemeExtension<AppColorsThemeExt> {
   final Color bottomSheetBarrier;
   final Color surface;
   final Color input;
+  final Color border;
 
   /// Light theme colors
   static AppColorsThemeExt get light => const AppColorsThemeExt(
@@ -200,6 +208,7 @@ class AppColorsThemeExt extends ThemeExtension<AppColorsThemeExt> {
     bottomSheetBarrier: LightAppColors.bottomSheetBarrier,
     surface: LightAppColors.surface,
     input: LightAppColors.input,
+    border: LightAppColors.border,
   );
 
   /// Dark theme colors
@@ -228,6 +237,7 @@ class AppColorsThemeExt extends ThemeExtension<AppColorsThemeExt> {
     bottomSheetBarrier: DarkAppColors.bottomSheetBarrier,
     surface: DarkAppColors.surface,
     input: DarkAppColors.input,
+    border: DarkAppColors.border,
   );
 
   @override
@@ -256,6 +266,7 @@ class AppColorsThemeExt extends ThemeExtension<AppColorsThemeExt> {
     Color? bottomSheetBarrier,
     Color? surface,
     Color? input,
+    Color? border,
   }) {
     return AppColorsThemeExt(
       primary: primary ?? this.primary,
@@ -282,6 +293,7 @@ class AppColorsThemeExt extends ThemeExtension<AppColorsThemeExt> {
       bottomSheetBarrier: bottomSheetBarrier ?? this.bottomSheetBarrier,
       surface: surface ?? this.surface,
       input: input ?? this.input,
+      border: border ?? this.border,
     );
   }
 
@@ -323,6 +335,7 @@ class AppColorsThemeExt extends ThemeExtension<AppColorsThemeExt> {
       bottomSheetBarrier: Color.lerp(bottomSheetBarrier, other.bottomSheetBarrier, t)!,
       surface: Color.lerp(surface, other.surface, t)!,
       input: Color.lerp(input, other.input, t)!,
+      border: Color.lerp(border, other.border, t)!,
     );
   }
 }
