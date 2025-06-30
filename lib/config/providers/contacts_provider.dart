@@ -3,22 +3,35 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:whitenoise/config/providers/active_account_provider.dart';
 import 'package:whitenoise/config/providers/auth_provider.dart';
+import 'package:whitenoise/domain/models/contact_model.dart';
 import 'package:whitenoise/src/rust/api.dart';
 
 class ContactsState {
   final Map<PublicKey, MetadataData?>? contacts;
+  final List<ContactModel>? contactModels;
+  final Map<String, PublicKey>? publicKeyMap;
   final bool isLoading;
   final String? error;
 
-  const ContactsState({this.contacts, this.isLoading = false, this.error});
+  const ContactsState({
+    this.contacts,
+    this.contactModels,
+    this.publicKeyMap,
+    this.isLoading = false,
+    this.error,
+  });
 
   ContactsState copyWith({
     Map<PublicKey, MetadataData?>? contacts,
+    List<ContactModel>? contactModels,
+    Map<String, PublicKey>? publicKeyMap,
     bool? isLoading,
     String? error,
   }) {
     return ContactsState(
       contacts: contacts ?? this.contacts,
+      contactModels: contactModels ?? this.contactModels,
+      publicKeyMap: publicKeyMap ?? this.publicKeyMap,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
     );
@@ -54,23 +67,75 @@ class ContactsNotifier extends Notifier<ContactsState> {
       final ownerPk = await publicKeyFromString(publicKeyString: ownerHex);
       final raw = await fetchContacts(pubkey: ownerPk);
 
-      // fetchContacts already returns Map<PublicKey, MetadataData?> with metadata included
       _logger.info('ContactsProvider: Loaded ${raw.length} contacts');
+
+      final contactModels = <ContactModel>[];
+      final publicKeyMap = <String, PublicKey>{};
+
       for (final entry in raw.entries) {
         final metadata = entry.value;
+
+        String? contactIdentifier;
+        final hashCode = entry.key.hashCode;
+        final metadataName = metadata?.name ?? metadata?.displayName ?? 'unknown';
+        contactIdentifier =
+            'failed_npub_${hashCode.abs()}_${metadataName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').toLowerCase()}';
+        bool npubSuccess = false;
+        try {
+          contactIdentifier = await exportAccountNpub(pubkey: entry.key);
+          npubSuccess = true;
+          _logger.info('ContactsProvider: ✅ Direct npub conversion successful: $contactIdentifier');
+        } catch (e, st) {
+          _logger.warning('ContactsProvider: ❌ Direct exportAccountNpub failed: $e \n$st');
+        }
+        if (!npubSuccess) {
+          _logger.severe(
+            'ContactsProvider: 💥 ALL npub attempts failed, using fallback: $contactIdentifier',
+          );
+          _logger.severe(
+            'ContactsProvider: PublicKey type: ${entry.key.runtimeType}, hash: ${entry.key.hashCode}',
+          );
+        }
+
+        // Create the contact model with the resolved identifier
+        final contactModel = ContactModel.fromMetadata(
+          publicKey: contactIdentifier ?? 'unknown',
+          metadata: metadata,
+        );
+
+        publicKeyMap[contactIdentifier!] = entry.key;
+        contactModels.add(contactModel);
+
         if (metadata != null) {
           _logger.info(
-            'ContactsProvider: Contact with metadata - name: ${metadata.name}, displayName: ${metadata.displayName}, picture: ${metadata.picture}',
+            'ContactsProvider: Contact processed - name: ${contactModel.name}, displayName: ${contactModel.displayName}, id: $contactIdentifier',
           );
         } else {
-          _logger.info('ContactsProvider: Contact with NULL metadata');
+          _logger.info(
+            'ContactsProvider: Contact processed with NULL metadata - name: ${contactModel.name}, id: $contactIdentifier',
+          );
         }
       }
 
-      state = state.copyWith(contacts: raw);
+      state = state.copyWith(
+        contacts: raw,
+        contactModels: contactModels,
+        publicKeyMap: publicKeyMap,
+      );
     } catch (e, st) {
       _logger.severe('loadContacts', e, st);
-      state = state.copyWith(error: e.toString());
+      String errorMessage = 'Failed to load contacts';
+      if (e is WhitenoiseError) {
+        try {
+          errorMessage = await whitenoiseErrorToString(error: e);
+        } catch (conversionError) {
+          _logger.warning('Failed to convert WhitenoiseError to string: $conversionError');
+          errorMessage = 'Failed to load contacts due to an internal error';
+        }
+      } else {
+        errorMessage = e.toString();
+      }
+      state = state.copyWith(error: errorMessage);
     } finally {
       state = state.copyWith(isLoading: false);
     }
@@ -123,7 +188,18 @@ class ContactsNotifier extends Notifier<ContactsState> {
       _logger.info('ContactsProvider: Contact list refreshed after adding');
     } catch (e, st) {
       _logger.severe('addContact', e, st);
-      state = state.copyWith(error: e.toString());
+      String errorMessage = 'Failed to add contact';
+      if (e is WhitenoiseError) {
+        try {
+          errorMessage = await whitenoiseErrorToString(error: e);
+        } catch (conversionError) {
+          _logger.warning('Failed to convert WhitenoiseError to string: $conversionError');
+          errorMessage = 'Failed to add contact due to an internal error';
+        }
+      } else {
+        errorMessage = e.toString();
+      }
+      state = state.copyWith(error: errorMessage);
     } finally {
       state = state.copyWith(isLoading: false);
     }
@@ -160,7 +236,18 @@ class ContactsNotifier extends Notifier<ContactsState> {
       await loadContacts(activeAccountData.pubkey);
     } catch (e, st) {
       _logger.severe('removeContact', e, st);
-      state = state.copyWith(error: e.toString());
+      String errorMessage = 'Failed to remove contact';
+      if (e is WhitenoiseError) {
+        try {
+          errorMessage = await whitenoiseErrorToString(error: e);
+        } catch (conversionError) {
+          _logger.warning('Failed to convert WhitenoiseError to string: $conversionError');
+          errorMessage = 'Failed to remove contact due to an internal error';
+        }
+      } else {
+        errorMessage = e.toString();
+      }
+      state = state.copyWith(error: errorMessage);
     } finally {
       state = state.copyWith(isLoading: false);
     }
@@ -201,7 +288,18 @@ class ContactsNotifier extends Notifier<ContactsState> {
       await loadContacts(activeAccountData.pubkey);
     } catch (e, st) {
       _logger.severe('replaceContacts', e, st);
-      state = state.copyWith(error: e.toString());
+      String errorMessage = 'Failed to update contacts';
+      if (e is WhitenoiseError) {
+        try {
+          errorMessage = await whitenoiseErrorToString(error: e);
+        } catch (conversionError) {
+          _logger.warning('Failed to convert WhitenoiseError to string: $conversionError');
+          errorMessage = 'Failed to update contacts due to an internal error';
+        }
+      } else {
+        errorMessage = e.toString();
+      }
+      state = state.copyWith(error: errorMessage);
     } finally {
       state = state.copyWith(isLoading: false);
     }
@@ -247,11 +345,53 @@ class ContactsNotifier extends Notifier<ContactsState> {
       await loadContacts(activeAccountData.pubkey);
     } catch (e, st) {
       _logger.severe('removeContactByPublicKey', e, st);
-      state = state.copyWith(error: e.toString());
+      String errorMessage = 'Failed to remove contact';
+      if (e is WhitenoiseError) {
+        try {
+          errorMessage = await whitenoiseErrorToString(error: e);
+        } catch (conversionError) {
+          _logger.warning('Failed to convert WhitenoiseError to string: $conversionError');
+          errorMessage = 'Failed to remove contact due to an internal error';
+        }
+      } else {
+        errorMessage = e.toString();
+      }
+      state = state.copyWith(error: errorMessage);
     } finally {
       state = state.copyWith(isLoading: false);
     }
   }
+
+  // Helper methods for UI components
+  List<ContactModel> getFilteredContacts(String searchQuery) {
+    final contacts = state.contactModels;
+    if (contacts == null) return [];
+
+    if (searchQuery.isEmpty) return contacts;
+
+    return contacts
+        .where(
+          (contact) =>
+              contact.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
+              contact.displayNameOrName.toLowerCase().contains(
+                searchQuery.toLowerCase(),
+              ) ||
+              (contact.nip05?.toLowerCase().contains(
+                    searchQuery.toLowerCase(),
+                  ) ??
+                  false) ||
+              contact.publicKey.toLowerCase().contains(
+                searchQuery.toLowerCase(),
+              ),
+        )
+        .toList();
+  }
+
+  PublicKey? getPublicKeyForContact(String contactPublicKey) {
+    return state.publicKeyMap?[contactPublicKey];
+  }
+
+  List<ContactModel> get allContacts => state.contactModels ?? [];
 }
 
 // Riverpod provider
