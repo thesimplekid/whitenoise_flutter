@@ -1,131 +1,7 @@
 import 'package:flutter/material.dart';
 
-class LightAppColors {
-  /// base/primary, custom colors/glitch-950
-  static const primary = Color(0xff202320);
-
-  /// base/secondary
-  static const secondary = Color(0xffF2F2F2);
-  static const tertiary = Color(0xFFE9F1FE);
-  static const neutral = Color(0xFFFFFFFF);
-  static const neutralVariant = Color(0xFF5A605A);
-
-  /// base/background
-  static const primaryForeground = Color(0xffF9F9F9);
-
-  /// base/accent-foreground, base/secondary-foreground, base/foreground
-  static const secondaryForeground = Color(0xff2D312D);
-
-  /// base/muted-foreground
-  static const mutedForeground = Color(0xFF727772);
-
-  /// base/muted, base/input
-  static const baseMuted = Color(0xffE2E2E2);
-
-  /// Text/Default/Secondary
-  static const textDefaultSecondary = Color(0xff757575);
-
-  static const success = Color(0xFF2EA970);
-
-  /// base/destructive
-  static const destructive = Color(0xFFDC2626);
-
-  /// base/warning
-  static const warning = Color(0xffEA580C);
-
-  static const baseChat = Color(0xff2A9D90);
-  static const baseChat2 = Color(0xffE76E50);
-  static const teal200 = Color(0xff99F6E4);
-  static const teal600 = Color(0xFF0D9488);
-
-  /// tailwind colors/rose/500
-  static const rose = Color(0xFFF43F5E);
-
-  /// tailwind colors/lime/500
-  static const lime = Color(0xff84CC16);
-
-  /// app bar color
-  static const appBarBackground = Color(0xff000000);
-
-  /// app bar text color
-  static const appBarForeground = Color(0xffffffff);
-
-  /// bottom sheet barrier color
-  static const bottomSheetBarrier = Color(0x0FFFFFFF);
-
-  /// textfield background
-  static const surface = Color(0xfffafafa);
-
-  /// textfield border
-  static const input = Color(0xffe5e5e5);
-
-  /// border
-  static const border = Color(0xffE5E5E5);
-}
-
-/// Dark theme colors
-class DarkAppColors {
-  /// base/primary, Custom inverted for dark mode
-  static const primary = Color(0xffF9F9F9);
-
-  /// base/secondary
-  static const secondary = Color(0xff202320);
-  static const tertiary = Color(0xFF1A2B4B);
-  static const neutral = Color(0xFF000000);
-  static const neutralVariant = Color(0xFF5A605A);
-
-  /// base/background
-  static const primaryBackground = Color(0xff2D312D);
-
-  /// base/accent-foreground, base/secondary-foreground, base/foreground
-  static const secondaryForeground = Color(0xffF2F2F2);
-
-  /// base/muted-foreground
-  static const mutedForeground = Color(0xFF727772);
-
-  /// base/muted, base/input
-  static const baseMuted = Color(0xff474C47);
-
-  /// Text/Default/Secondary
-  static const textDefaultSecondary = Color(0xffCDCECD);
-
-  static const success = Color(0xFF4ADE80);
-
-  /// base/destructive
-  static const destructive = Color(0xFFEF4444);
-
-  /// base/warning
-  static const warning = Color(0xffF97316);
-
-  static const baseChat = Color(0xff2A9D90);
-  static const baseChat2 = Color(0xffE76E50);
-  static const teal200 = Color(0xff99F6E4);
-  static const teal600 = Color(0xFF0D9488);
-
-  /// tailwind colors/rose/500
-  static const rose = Color(0xFFF43F5E);
-
-  /// tailwind colors/lime/500
-  static const lime = Color(0xff84CC16);
-
-  /// app bar color
-  static const appBarBackground = Color(0xff171717);
-
-  /// app bar text color
-  static const appBarForeground = Color(0xffffffff);
-
-  /// bottom sheet barrier color
-  static const bottomSheetBarrier = Color(0x0FFFFFFF);
-
-  /// textfield background
-  static const surface = Color(0xff171717);
-
-  /// textfield border
-  static const input = Color(0xff262626);
-
-  /// border
-  static const border = Color(0xff262626);
-}
+part 'colors_light.dart';
+part 'colors_dark.dart';
 
 class AppColorsThemeExt extends ThemeExtension<AppColorsThemeExt> {
   const AppColorsThemeExt({
@@ -151,9 +27,17 @@ class AppColorsThemeExt extends ThemeExtension<AppColorsThemeExt> {
     required this.appBarBackground,
     required this.appBarForeground,
     required this.bottomSheetBarrier,
-    required this.surface,
-    required this.input,
+    required this.link,
     required this.border,
+    required this.avatarSurface,
+    required this.solidPrimary,
+    required this.input,
+    required this.meChatBubble,
+    required this.contactChatBubble,
+    required this.meChatBubbleText,
+    required this.contactChatBubbleText,
+    required this.overlay,
+    required this.surface,
   });
 
   final Color primary;
@@ -178,9 +62,17 @@ class AppColorsThemeExt extends ThemeExtension<AppColorsThemeExt> {
   final Color appBarBackground;
   final Color appBarForeground;
   final Color bottomSheetBarrier;
-  final Color surface;
-  final Color input;
+  final Color link;
   final Color border;
+  final Color avatarSurface;
+  final Color solidPrimary;
+  final Color input;
+  final Color meChatBubble;
+  final Color contactChatBubble;
+  final Color meChatBubbleText;
+  final Color contactChatBubbleText;
+  final Color overlay;
+  final Color surface;
 
   /// Light theme colors
   static AppColorsThemeExt get light => const AppColorsThemeExt(
@@ -206,9 +98,17 @@ class AppColorsThemeExt extends ThemeExtension<AppColorsThemeExt> {
     appBarBackground: LightAppColors.appBarBackground,
     appBarForeground: LightAppColors.appBarForeground,
     bottomSheetBarrier: LightAppColors.bottomSheetBarrier,
-    surface: LightAppColors.surface,
-    input: LightAppColors.input,
+    link: LightAppColors.link,
     border: LightAppColors.border,
+    avatarSurface: LightAppColors.avatarSurface,
+    solidPrimary: LightAppColors.solidPrimary,
+    input: LightAppColors.input,
+    meChatBubble: LightAppColors.meChatBubble,
+    contactChatBubble: LightAppColors.contactChatBubble,
+    meChatBubbleText: LightAppColors.meChatBubbleText,
+    contactChatBubbleText: LightAppColors.contactChatBubbleText,
+    overlay: LightAppColors.overlay,
+    surface: LightAppColors.surface,
   );
 
   /// Dark theme colors
@@ -218,7 +118,7 @@ class AppColorsThemeExt extends ThemeExtension<AppColorsThemeExt> {
     tertiary: DarkAppColors.tertiary,
     neutral: DarkAppColors.neutral,
     neutralVariant: DarkAppColors.neutralVariant,
-    primaryForeground: DarkAppColors.primaryBackground,
+    primaryForeground: DarkAppColors.primaryForeground,
     secondaryForeground: DarkAppColors.secondaryForeground,
     mutedForeground: DarkAppColors.mutedForeground,
     baseMuted: DarkAppColors.baseMuted,
@@ -235,9 +135,17 @@ class AppColorsThemeExt extends ThemeExtension<AppColorsThemeExt> {
     appBarBackground: DarkAppColors.appBarBackground,
     appBarForeground: DarkAppColors.appBarForeground,
     bottomSheetBarrier: DarkAppColors.bottomSheetBarrier,
-    surface: DarkAppColors.surface,
-    input: DarkAppColors.input,
+    link: DarkAppColors.link,
     border: DarkAppColors.border,
+    avatarSurface: DarkAppColors.avatarSurface,
+    solidPrimary: DarkAppColors.solidPrimary,
+    input: DarkAppColors.input,
+    meChatBubble: DarkAppColors.meChatBubble,
+    contactChatBubble: DarkAppColors.contactChatBubble,
+    meChatBubbleText: DarkAppColors.meChatBubbleText,
+    contactChatBubbleText: DarkAppColors.contactChatBubbleText,
+    overlay: DarkAppColors.overlay,
+    surface: DarkAppColors.surface,
   );
 
   @override
@@ -264,9 +172,17 @@ class AppColorsThemeExt extends ThemeExtension<AppColorsThemeExt> {
     Color? appBarBackground,
     Color? appBarForeground,
     Color? bottomSheetBarrier,
-    Color? surface,
-    Color? input,
+    Color? link,
     Color? border,
+    Color? avatarSurface,
+    Color? solidPrimary,
+    Color? input,
+    Color? meChatBubble,
+    Color? contactChatBubble,
+    Color? meChatBubbleText,
+    Color? contactChatBubbleText,
+    Color? overlay,
+    Color? surface,
   }) {
     return AppColorsThemeExt(
       primary: primary ?? this.primary,
@@ -291,9 +207,17 @@ class AppColorsThemeExt extends ThemeExtension<AppColorsThemeExt> {
       appBarBackground: appBarBackground ?? this.appBarBackground,
       appBarForeground: appBarForeground ?? this.appBarForeground,
       bottomSheetBarrier: bottomSheetBarrier ?? this.bottomSheetBarrier,
-      surface: surface ?? this.surface,
-      input: input ?? this.input,
+      link: link ?? this.link,
       border: border ?? this.border,
+      avatarSurface: avatarSurface ?? this.avatarSurface,
+      solidPrimary: solidPrimary ?? this.solidPrimary,
+      input: input ?? this.input,
+      meChatBubble: meChatBubble ?? this.meChatBubble,
+      contactChatBubble: contactChatBubble ?? this.contactChatBubble,
+      meChatBubbleText: meChatBubbleText ?? this.meChatBubbleText,
+      contactChatBubbleText: contactChatBubbleText ?? this.contactChatBubbleText,
+      overlay: overlay ?? this.overlay,
+      surface: surface ?? this.surface,
     );
   }
 
@@ -333,9 +257,17 @@ class AppColorsThemeExt extends ThemeExtension<AppColorsThemeExt> {
       appBarBackground: Color.lerp(appBarBackground, other.appBarBackground, t)!,
       appBarForeground: Color.lerp(appBarForeground, other.appBarForeground, t)!,
       bottomSheetBarrier: Color.lerp(bottomSheetBarrier, other.bottomSheetBarrier, t)!,
-      surface: Color.lerp(surface, other.surface, t)!,
-      input: Color.lerp(input, other.input, t)!,
+      link: Color.lerp(link, other.link, t)!,
       border: Color.lerp(border, other.border, t)!,
+      avatarSurface: Color.lerp(avatarSurface, other.avatarSurface, t)!,
+      solidPrimary: Color.lerp(solidPrimary, other.solidPrimary, t)!,
+      input: Color.lerp(input, other.input, t)!,
+      meChatBubble: Color.lerp(meChatBubble, other.meChatBubble, t)!,
+      contactChatBubble: Color.lerp(contactChatBubble, other.contactChatBubble, t)!,
+      meChatBubbleText: Color.lerp(meChatBubbleText, other.meChatBubbleText, t)!,
+      contactChatBubbleText: Color.lerp(contactChatBubbleText, other.contactChatBubbleText, t)!,
+      overlay: Color.lerp(overlay, other.overlay, t)!,
+      surface: Color.lerp(surface, other.surface, t)!,
     );
   }
 }

@@ -127,6 +127,14 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
 
   @override
   Widget build(BuildContext context) {
+    final textStyle =
+        widget.style ??
+        TextStyle(
+          color: context.colors.primary,
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w600,
+        );
+
     final decoration = (widget.decoration ?? const InputDecoration()).copyWith(
       suffixIcon: suffixIcon,
       labelText: widget.labelText,
@@ -137,7 +145,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
         color: context.colors.mutedForeground,
       ),
       suffixIconColor: context.colors.primary,
-      fillColor: context.colors.surface,
+      fillColor: context.colors.avatarSurface,
       contentPadding: EdgeInsets.symmetric(
         horizontal: 12.w,
         vertical: 16.h,
@@ -152,12 +160,6 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
         borderRadius: BorderRadius.zero,
         borderSide: BorderSide(
           color: context.colors.input,
-        ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(
-          color: context.colors.primary,
         ),
       ),
       filled: true,
@@ -184,13 +186,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
       onSaved: widget.onSaved,
       autocorrect: widget.autocorrect,
       onTap: widget.onTap,
-      style:
-          widget.style ??
-          TextStyle(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
-            color: context.colors.primary,
-          ),
+      style: textStyle,
       textAlign: widget.textAlign,
       textInputAction: widget.textInputAction,
       obscureText: widget.obscureText ?? isObscuringText,

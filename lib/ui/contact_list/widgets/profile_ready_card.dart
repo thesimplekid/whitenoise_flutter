@@ -33,7 +33,7 @@ class ProfileReadyCard extends ConsumerWidget {
   Widget _buildCard(BuildContext context, WidgetRef ref) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.w),
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      margin: EdgeInsets.symmetric(horizontal: 16.w).copyWith(bottom: 32.h),
       decoration: BoxDecoration(
         color: context.colors.surface,
         border: Border.all(color: context.colors.border),
@@ -83,8 +83,15 @@ class ProfileReadyCard extends ConsumerWidget {
                   size: AppButtonSize.small,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text('Start Chatting', style: AppButtonSize.small.textStyle()),
+                      Flexible(
+                        child: Text(
+                          'Start Chatting',
+                          style: AppButtonSize.small.textStyle(),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                       Gap(6.w),
                       SvgPicture.asset(
                         AssetsPaths.icStartChatting,
