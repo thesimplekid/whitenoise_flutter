@@ -41,26 +41,53 @@ class ProfileNotifier extends AsyncNotifier<ProfileState> {
         pubkey: publicKey,
       );
 
-      // Create npub from pubkey for display
-      final npub = activeAccountData.pubkey; // We'll use the pubkey directly for now
-
       final profileState = ProfileState(
-        name: metadata?.name,
         displayName: metadata?.displayName,
         about: metadata?.about,
         picture: metadata?.picture,
-        banner: metadata?.banner,
-        website: metadata?.website,
         nip05: metadata?.nip05,
-        lud16: metadata?.lud16,
-        npub: npub,
       );
 
-      state = AsyncValue.data(profileState);
+      state = AsyncValue.data(
+        profileState.copyWith(initialProfile: profileState),
+      );
     } catch (e, st) {
       _logger.severe('loadProfileData', e, st);
       state = AsyncValue.error(e.toString(), st);
     }
+  }
+
+  void updateLocalProfile({
+    String? displayName,
+    String? about,
+    String? picture,
+    String? nip05,
+  }) {
+    state.whenData((value) {
+      state = AsyncValue.data(
+        value.copyWith(
+          displayName: displayName ?? value.displayName,
+          about: about ?? value.about,
+          picture: picture ?? value.picture,
+          nip05: nip05 ?? value.nip05,
+        ),
+      );
+    });
+  }
+
+  void discardChanges() {
+    state.whenData((value) {
+      if (value.initialProfile != null) {
+        state = AsyncValue.data(
+          value.copyWith(
+            displayName: value.initialProfile!.displayName,
+            about: value.initialProfile!.about,
+            picture: value.initialProfile!.picture,
+            nip05: value.initialProfile!.nip05,
+          ),
+        );
+      }
+    });
   }
 
   Future<String?> pickProfileImage() async {
@@ -69,6 +96,12 @@ class ProfileNotifier extends AsyncNotifier<ProfileState> {
         source: ImageSource.gallery,
       );
       if (image != null) {
+        state.whenData(
+          (value) =>
+              state = AsyncValue.data(
+                value.copyWith(picture: image.path),
+              ),
+        );
         return image.path;
       }
       return null;
@@ -78,33 +111,16 @@ class ProfileNotifier extends AsyncNotifier<ProfileState> {
     }
   }
 
-  Future<String?> pickBannerImage() async {
-    try {
-      final XFile? image = await _imagePicker.pickImage(
-        source: ImageSource.gallery,
-      );
-      if (image != null) {
-        return image.path;
-      }
-      return null;
-    } catch (e, st) {
-      _logger.severe('pickBannerImage', e, st);
-      return null;
-    }
-  }
-
   Future<void> updateProfileData({
-    String? name,
     String? displayName,
     String? about,
     String? picture,
-    String? banner,
     String? nip05,
-    String? lud16,
   }) async {
+    state = AsyncValue.data(
+      state.value!.copyWith(isSaving: true, error: null, stackTrace: null),
+    );
     try {
-      state = const AsyncValue.loading();
-      //TODO: refine - use state object
       final authState = ref.read(authProvider);
       if (!authState.isAuthenticated) {
         state = AsyncValue.error('Not authenticated', StackTrace.current);
@@ -124,37 +140,31 @@ class ProfileNotifier extends AsyncNotifier<ProfileState> {
         pubkey: publicKey,
       );
 
-      metadata?.name = name;
-      metadata?.displayName = displayName;
-      metadata?.about = about;
-      metadata?.picture = picture;
-      metadata?.banner = banner;
-      metadata?.nip05 = nip05;
-      metadata?.lud16 = lud16;
+      if (metadata == null) {
+        throw Exception('Metadata not found');
+      }
+      metadata.displayName = displayName;
+      metadata.about = about;
+      metadata.picture = picture;
+      metadata.nip05 = nip05;
 
       // Create a new PublicKey object just before using it to avoid disposal issues
       final publicKeyForUpdate = await publicKeyFromString(
         publicKeyString: activeAccountData.pubkey,
       );
+
       await updateMetadata(
         pubkey: publicKeyForUpdate,
-        metadata: metadata!,
+        metadata: metadata,
       );
 
-      state = AsyncValue.data(
-        state.value!.copyWith(
-          name: name,
-          displayName: displayName,
-          about: about,
-          picture: picture,
-          banner: banner,
-          nip05: nip05,
-          lud16: lud16,
-        ),
-      );
+      await fetchProfileData();
     } catch (e, st) {
       _logger.severe('updateProfileData', e, st);
-      state = AsyncValue.error(e.toString(), st);
+      state = AsyncValue.data(
+        state.value!.copyWith(isSaving: false, error: e, stackTrace: st),
+      );
+      rethrow;
     }
   }
 }
