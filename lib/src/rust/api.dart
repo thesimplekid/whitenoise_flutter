@@ -245,18 +245,26 @@ Future<GroupData> createGroup({
 /// # Returns
 /// * `Ok(MessageWithTokensData)` - The sent message and parsed tokens if successful
 /// * `Err(WhitenoiseError)` - If there was an error sending the message
-Future<MessageWithTokensData> sendMessage({
+Future<MessageWithTokensData> sendMessageToGroup({
   required PublicKey pubkey,
   required GroupId groupId,
   required String message,
   required int kind,
   List<Tag>? tags,
-}) => RustLib.instance.api.crateApiSendMessage(
+}) => RustLib.instance.api.crateApiSendMessageToGroup(
   pubkey: pubkey,
   groupId: groupId,
   message: message,
   kind: kind,
   tags: tags,
+);
+
+Future<List<MessageWithTokensData>> fetchMessagesForGroup({
+  required PublicKey pubkey,
+  required GroupId groupId,
+}) => RustLib.instance.api.crateApiFetchMessagesForGroup(
+  pubkey: pubkey,
+  groupId: groupId,
 );
 
 /// This method adds new members to an existing MLS group. The calling account must have

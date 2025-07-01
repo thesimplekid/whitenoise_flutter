@@ -331,6 +331,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<GroupData> dco_decode_list_group_data(dynamic raw);
 
   @protected
+  List<MessageWithTokensData> dco_decode_list_message_with_tokens_data(
+    dynamic raw,
+  );
+
+  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
@@ -671,6 +676,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<GroupData> sse_decode_list_group_data(SseDeserializer deserializer);
+
+  @protected
+  List<MessageWithTokensData> sse_decode_list_message_with_tokens_data(
+    SseDeserializer deserializer,
+  );
 
   @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
@@ -1058,6 +1068,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_group_data(
     List<GroupData> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_message_with_tokens_data(
+    List<MessageWithTokensData> self,
     SseSerializer serializer,
   );
 
