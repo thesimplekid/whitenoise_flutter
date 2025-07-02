@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -13,16 +11,13 @@ import 'package:whitenoise/config/providers/profile_provider.dart';
 import 'package:whitenoise/config/states/profile_state.dart';
 import 'package:whitenoise/domain/models/contact_model.dart';
 import 'package:whitenoise/routing/routes.dart';
-import 'package:whitenoise/src/rust/api.dart';
 import 'package:whitenoise/src/rust/api/accounts.dart';
 import 'package:whitenoise/src/rust/api/utils.dart';
 import 'package:whitenoise/ui/contact_list/widgets/contact_list_tile.dart';
 import 'package:whitenoise/ui/core/themes/src/extensions.dart';
 import 'package:whitenoise/ui/core/ui/app_button.dart';
 import 'package:whitenoise/ui/core/ui/custom_app_bar.dart';
-import 'package:whitenoise/ui/settings/profile/add_profile_bottom_sheet.dart';
 import 'package:whitenoise/ui/settings/profile/switch_profile_bottom_sheet.dart';
-import 'package:whitenoise/ui/settings/widgets/theme_toggle_icon_button.dart';
 
 class GeneralSettingsScreen extends ConsumerStatefulWidget {
   const GeneralSettingsScreen({super.key});
@@ -35,9 +30,8 @@ class _GeneralSettingsScreenState extends ConsumerState<GeneralSettingsScreen> {
   List<AccountData> _accounts = [];
   AccountData? _currentAccount;
   Map<String, MetadataData?> _accountMetadata = {}; // Cache for metadata
-  bool _isLoading = true;
   ProviderSubscription<AsyncValue<ProfileState>>? _profileSubscription;
-
+  bool _isLoading = false;
   @override
   void initState() {
     super.initState();
@@ -65,7 +59,6 @@ class _GeneralSettingsScreenState extends ConsumerState<GeneralSettingsScreen> {
   Future<void> _loadAccounts() async {
     try {
       setState(() => _isLoading = true);
-
       final accounts = await fetchAccounts();
       final activeAccountPubkey = ref.read(activeAccountProvider);
 
@@ -104,13 +97,13 @@ class _GeneralSettingsScreenState extends ConsumerState<GeneralSettingsScreen> {
         _accounts = accounts;
         _currentAccount = currentAccount;
         _accountMetadata = metadataMap;
-        _isLoading = false;
       });
     } catch (e) {
-      setState(() => _isLoading = false);
       if (mounted) {
         ref.showErrorToast('Failed to load accounts: $e');
       }
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -189,187 +182,134 @@ class _GeneralSettingsScreenState extends ConsumerState<GeneralSettingsScreen> {
     context.go(Routes.home);
   }
 
-  Future<void> _deleteAllData() async {
-    // Show confirmation dialog first
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierColor: Colors.transparent,
-      builder:
-          (context) => BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-            child: Container(
-              color: Colors.black.withValues(alpha: 0.3),
-              child: Dialog(
-                backgroundColor: context.colors.neutral,
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(
-                    color: context.colors.border,
-                  ),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(24.w),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Delete All Data',
-                        style: TextStyle(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.w600,
-                          color: context.colors.secondaryForeground,
-                        ),
-                      ),
-                      Gap(16.h),
-                      Text(
-                        'This will permanently delete all your accounts, messages, groups, and app data. This action cannot be undone.\n\nAre you sure you want to continue?',
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          color: context.colors.mutedForeground,
-                          height: 1.4,
-                        ),
-                      ),
-                      Gap(24.h),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: AppFilledButton(
-                              title: 'Cancel',
-                              visualState: AppButtonVisualState.secondary,
-                              size: AppButtonSize.small,
-                              onPressed: () => Navigator.of(context).pop(false),
-                            ),
-                          ),
-                          Gap(12.w),
-                          Expanded(
-                            child: AppFilledButton.child(
-                              visualState: AppButtonVisualState.error,
-                              size: AppButtonSize.small,
-                              onPressed: () => Navigator.of(context).pop(true),
-                              child: Text(
-                                'Delete',
-                                style: AppButtonSize.small.textStyle().copyWith(
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-    );
-
-    // If user didn't confirm, return early
-    if (confirmed != true) return;
-
-    try {
-      // Show loading dialog
-      if (!mounted) return;
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => const Center(child: CircularProgressIndicator()),
-      );
-
-      // Call the Rust API to delete all data
-      await deleteAllData();
-
-      if (!mounted) return;
-
-      // Close loading dialog
-      Navigator.of(context).pop();
-
-      // Show success message
-      ref.showSuccessToast('All data deleted successfully');
-
-      // Navigate back to home/login screen since all accounts are logged out
-      context.go(Routes.home);
-    } catch (e) {
-      if (!mounted) return;
-
-      // Close loading dialog
-      Navigator.of(context).pop();
-
-      // Show error message
-      ref.showErrorToast('Failed to delete data: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.colors.neutral,
-      appBar: const CustomAppBar(
-        title: Text('Settings'),
-        actions: [
-          ThemeToggleIconButton(),
-        ],
+      appBar: CustomAppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          onPressed: () => context.pop(),
+          icon: Icon(
+            CarbonIcons.chevron_left,
+            size: 24.w,
+            color: context.colors.primarySolid,
+          ),
+        ),
+        title: Row(
+          children: [
+            Text(
+              'Settings',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: context.colors.primarySolid,
+              ),
+            ),
+          ],
+        ),
       ),
       body: ListView(
-        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
+        padding: EdgeInsets.symmetric(vertical: 24.h),
         children: [
-          if (_isLoading)
-            const Center(child: CircularProgressIndicator())
-          else if (_currentAccount != null)
-            ContactListTile(
-              contact: _accountToContactModel(_currentAccount!),
-              showExpansionArrow: _accounts.length > 1,
-              onTap: () {
-                if (_accounts.length > 1) {
-                  _showAccountSwitcher();
-                }
-              },
-            )
-          else
-            const Center(child: Text('No accounts found')),
-          Divider(color: context.colors.baseMuted, height: 24.h),
-          SettingsListTile(
-            icon: CarbonIcons.user,
-            text: 'Edit Profile',
-            onTap: () => context.push('${Routes.settings}/profile'),
-          ),
-          SettingsListTile(
-            icon: CarbonIcons.password,
-            text: 'Profile Keys',
-            onTap: () => context.push('${Routes.settings}/keys'),
-          ),
-          SettingsListTile(
-            icon: CarbonIcons.satellite,
-            text: 'Network',
-            onTap: () => context.push('${Routes.settings}/network'),
-          ),
-          SettingsListTile(
-            icon: CarbonIcons.wallet,
-            text: 'Wallet',
-            onTap: () => context.push('${Routes.settings}/wallet'),
-          ),
-          SettingsListTile(
-            icon: CarbonIcons.debug,
-            text: 'Developer Testing',
-            onTap: () => context.push('${Routes.settings}/developer'),
-          ),
-          Divider(color: context.colors.baseMuted, height: 16.h),
-          SettingsListTile(
-            icon: CarbonIcons.logout,
-            text: 'Sign out',
-            onTap: _handleLogout,
-          ),
-          SettingsListTile(
-            icon: CarbonIcons.delete,
-            text: 'Delete all data',
-            onTap: _deleteAllData,
-            foregroundColor: context.colors.destructive,
-          ),
-          Divider(color: context.colors.baseMuted, height: 16.h),
-          Gap(24.h),
-          AppFilledButton(
-            title: 'Add another account',
-            onPressed: () => AddProfileBottomSheet.show(context: context),
+          Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: Column(
+                  children: [
+                    if (_isLoading)
+                      const Center(child: CircularProgressIndicator())
+                    else if (_currentAccount != null)
+                      ContactListTile(
+                        contact: _accountToContactModel(_currentAccount!),
+                        showExpansionArrow: true,
+                        onTap: () => _showAccountSwitcher(),
+                      )
+                    else
+                      const Center(child: Text('No accounts found')),
+                    Gap(12.h),
+                    AppFilledButton.child(
+                      size: AppButtonSize.small,
+                      visualState: AppButtonVisualState.secondary,
+                      onPressed: () {},
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Share Profile',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                              color: context.colors.primary,
+                            ),
+                          ),
+                          Gap(9.w),
+                          Icon(
+                            CarbonIcons.qr_code,
+                            size: 16.w,
+                            color: context.colors.primary,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Gap(16.h),
+                  ],
+                ),
+              ),
+              Divider(color: context.colors.baseMuted, height: 0.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: Column(
+                  children: [
+                    Gap(10.h),
+                    SettingsListTile(
+                      icon: CarbonIcons.user,
+                      text: 'Edit Profile',
+                      onTap: () => context.push('${Routes.settings}/profile'),
+                    ),
+                    SettingsListTile(
+                      icon: CarbonIcons.password,
+                      text: 'Profile Keys',
+                      onTap: () => context.push('${Routes.settings}/keys'),
+                    ),
+                    SettingsListTile(
+                      icon: CarbonIcons.data_vis_3,
+                      text: 'Network Relays',
+                      onTap: () => context.push('${Routes.settings}/network'),
+                    ),
+                    SettingsListTile(
+                      icon: CarbonIcons.logout,
+                      text: 'Sign out',
+                      onTap: _handleLogout,
+                    ),
+                    SettingsListTile(
+                      icon: CarbonIcons.debug,
+                      text: 'Developer Testing',
+                      onTap: () => context.push('${Routes.settings}/developer'),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(color: context.colors.baseMuted, height: 24.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: Column(
+                  children: [
+                    SettingsListTile(
+                      icon: CarbonIcons.settings,
+                      text: 'App Settings',
+                      onTap: () => context.push('${Routes.settings}/app_settings'),
+                    ),
+                    SettingsListTile(
+                      icon: CarbonIcons.favorite,
+                      text: 'Donate to White Noise',
+                      onTap: () => context.push(Routes.settingsDonate),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -396,17 +336,18 @@ class SettingsListTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 12.h),
+        padding: EdgeInsets.symmetric(vertical: 16.h),
         child: Row(
           children: [
-            Icon(icon, size: 24.w, color: foregroundColor ?? context.colors.mutedForeground),
+            Icon(icon, size: 24.w, color: foregroundColor ?? context.colors.primary),
             Gap(12.w),
             Expanded(
               child: Text(
                 text,
                 style: TextStyle(
-                  fontSize: 17.sp,
-                  color: foregroundColor ?? context.colors.secondaryForeground,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: foregroundColor ?? context.colors.primary,
                 ),
               ),
             ),
