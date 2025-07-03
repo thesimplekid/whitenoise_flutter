@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 
 import 'package:whitenoise/config/providers/toast_message_provider.dart';
 import 'package:whitenoise/config/states/toast_state.dart';
+import 'package:whitenoise/ui/core/themes/assets.dart';
 import 'package:whitenoise/ui/core/themes/src/app_theme.dart';
 
 class ToastOverlay extends ConsumerWidget {
@@ -25,7 +27,7 @@ class ToastOverlay extends ConsumerWidget {
         // Toasts at the very top of screen with safe area
         if (topToasts.isNotEmpty)
           Positioned(
-            top: MediaQuery.of(context).padding.top + 16.h,
+            top: MediaQuery.of(context).padding.top,
             left: 0,
             right: 0,
             child: Column(
@@ -126,37 +128,26 @@ class _ToastMessageWidgetState extends ConsumerState<ToastMessageWidget>
   Color _getBackgroundColor(BuildContext context) {
     switch (widget.message.type) {
       case ToastType.success:
-        return context.colors.teal200;
+        return context.colors.toastSuccess;
       case ToastType.error:
-        return context.colors.destructive;
+        return context.colors.toastError;
       case ToastType.warning:
-        return context.colors.warning;
+        return context.colors.toastWarning;
       case ToastType.info:
         return context.colors.primary;
     }
   }
 
-  Color _getTextColor(BuildContext context) {
+  String _getIconPath() {
     switch (widget.message.type) {
       case ToastType.success:
-        return context.colors.teal600;
+        return AssetsPaths.icSuccessFilled;
       case ToastType.error:
+        return AssetsPaths.icErrorFilled;
       case ToastType.warning:
+        return AssetsPaths.icWarningFilled;
       case ToastType.info:
-        return context.colors.neutral;
-    }
-  }
-
-  IconData _getIcon() {
-    switch (widget.message.type) {
-      case ToastType.success:
-        return Icons.check_circle_outline;
-      case ToastType.error:
-        return Icons.error;
-      case ToastType.warning:
-        return Icons.warning;
-      case ToastType.info:
-        return Icons.info;
+        return AssetsPaths.icInfoFilled;
     }
   }
 
@@ -171,32 +162,54 @@ class _ToastMessageWidgetState extends ConsumerState<ToastMessageWidget>
           onDismissed: (_) {
             ref.read(toastMessageProvider.notifier).dismissToast(widget.message.id);
           },
-          child: Container(
-            width: double.infinity,
-            height: 72.h,
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-            decoration: BoxDecoration(
-              color: _getBackgroundColor(context),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  _getIcon(),
-                  color: _getTextColor(context),
-                  size: 20.sp,
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Text(
-                    widget.message.message,
-                    style: TextStyle(
-                      color: _getTextColor(context),
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: double.infinity,
+              height: 64.h,
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              decoration: BoxDecoration(
+                color: context.colors.toastSurface,
+                border: Border(
+                  bottom: BorderSide(
+                    color: _getBackgroundColor(context),
+                    width: 1.h,
                   ),
                 ),
-              ],
+              ),
+              child: Row(
+                children: [
+                  SvgPicture.asset(
+                    _getIconPath(),
+                    height: 20.w,
+                    width: 20.w,
+                    colorFilter: ColorFilter.mode(
+                      _getBackgroundColor(context),
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      widget.message.message,
+                      style: TextStyle(
+                        color: context.colors.toastIcon,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      ref.read(toastMessageProvider.notifier).dismissToast(widget.message.id);
+                    },
+                    icon: Icon(
+                      Icons.close,
+                      color: context.colors.primary,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
