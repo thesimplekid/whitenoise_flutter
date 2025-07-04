@@ -8,7 +8,6 @@ import 'package:whitenoise/routing/routes.dart';
 import 'package:whitenoise/src/rust/api/groups.dart';
 import 'package:whitenoise/ui/chat/widgets/chat_contact_avatar.dart';
 import 'package:whitenoise/ui/chat/widgets/chat_header_widget.dart';
-import 'package:whitenoise/ui/core/themes/assets.dart';
 import 'package:whitenoise/ui/core/themes/src/app_theme.dart';
 import 'package:whitenoise/utils/timeago_formatter.dart';
 
@@ -47,9 +46,12 @@ class GroupListTile extends ConsumerWidget {
               flex: 5,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment:
+                    lastMessage != null ? MainAxisAlignment.start : MainAxisAlignment.center,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Flexible(
                         child: Text(
@@ -63,13 +65,6 @@ class GroupListTile extends ConsumerWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Gap(6.w),
-                      Image.asset(
-                        AssetsPaths.icNotificationMuted,
-                        width: 14.w,
-                        height: 14.w,
-                        color: context.colors.mutedForeground,
-                      ),
                       const Spacer(),
                       Text(
                         lastMessage?.createdAt.timeago().capitalizeFirst ?? '',
@@ -80,30 +75,32 @@ class GroupListTile extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  Gap(4.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    spacing: 32.w,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          lastMessage?.content ?? '',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: context.colors.mutedForeground,
+                  if (lastMessage != null) ...[
+                    Gap(4.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      spacing: 32.w,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            lastMessage!.content ?? '',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: context.colors.mutedForeground,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      const MessageReadStatus(
-                        // ignore: avoid_redundant_argument_values
-                        lastSentMessageStatus: MessageStatus.sent,
-                        unreadCount: 0,
-                      ),
-                    ],
-                  ),
+                        const MessageReadStatus(
+                          // ignore: avoid_redundant_argument_values
+                          lastSentMessageStatus: MessageStatus.sent,
+                          unreadCount: 0,
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
