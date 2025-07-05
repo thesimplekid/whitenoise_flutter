@@ -93,6 +93,7 @@ class GroupsNotifier extends Notifier<GroupsState> {
     try {
       final activeAccountData =
           await ref.read(activeAccountProvider.notifier).getActiveAccountData();
+
       if (activeAccountData == null) {
         state = state.copyWith(error: 'No active account found', isLoading: false);
         return null;
@@ -134,6 +135,8 @@ class GroupsNotifier extends Notifier<GroupsState> {
     } catch (e, st) {
       _logger.severe('GroupsProvider.createNewGroup', e, st);
       String errorMessage = 'Failed to create group';
+
+      // Add more detailed error handling for release builds
       if (e is WhitenoiseError) {
         try {
           errorMessage = await whitenoiseErrorToString(error: e);
