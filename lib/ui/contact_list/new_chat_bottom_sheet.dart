@@ -8,8 +8,8 @@ import 'package:whitenoise/config/constants.dart';
 import 'package:whitenoise/config/extensions/toast_extension.dart';
 import 'package:whitenoise/config/providers/active_account_provider.dart';
 import 'package:whitenoise/config/providers/contacts_provider.dart';
+import 'package:whitenoise/config/providers/metadata_cache_provider.dart';
 import 'package:whitenoise/domain/models/contact_model.dart';
-import 'package:whitenoise/src/rust/api/accounts.dart';
 import 'package:whitenoise/src/rust/api/relays.dart';
 import 'package:whitenoise/src/rust/api/utils.dart';
 import 'package:whitenoise/ui/contact_list/legacy_invite_bottom_sheet.dart';
@@ -118,6 +118,50 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
         (trimmed.startsWith('npub1') && trimmed.length > 10);
   }
 
+  Future<Event?> _fetchKeyPackageWithRetry(String publicKeyString) async {
+    const maxAttempts = 3;
+    Event? lastSuccessfulResult;
+
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        _logger.info('Key package fetch attempt $attempt for $publicKeyString');
+
+        // Create fresh PublicKey object for each attempt to avoid disposal issues
+        final freshPubkey = await publicKeyFromString(publicKeyString: publicKeyString);
+        final keyPackage = await fetchKeyPackage(pubkey: freshPubkey);
+
+        _logger.info(
+          'Key package fetch successful on attempt $attempt - result: ${keyPackage != null ? "found" : "null"}',
+        );
+        lastSuccessfulResult = keyPackage;
+        return keyPackage; // Return immediately on success (whether null or not)
+      } catch (e) {
+        _logger.warning('Key package fetch attempt $attempt failed: $e');
+
+        if (e.toString().contains('DroppableDisposedException')) {
+          _logger.warning('Detected disposal exception, will retry with fresh objects');
+        } else if (e.toString().contains('RustArc')) {
+          _logger.warning('Detected RustArc error, will retry with fresh objects');
+        } else {
+          // For non-disposal errors, don't retry
+          _logger.severe('Non-disposal error encountered, not retrying: $e');
+          rethrow;
+        }
+
+        if (attempt == maxAttempts) {
+          _logger.severe('Failed to fetch key package after $maxAttempts attempts: $e');
+          throw Exception('Failed to fetch key package after $maxAttempts attempts: $e');
+        }
+
+        // Wait a bit before retry
+        await Future.delayed(const Duration(milliseconds: 200));
+      }
+    }
+
+    // This should never be reached due to the logic above, but just in case
+    return lastSuccessfulResult;
+  }
+
   Future<void> _fetchMetadataForPublicKey(String publicKey) async {
     if (_isLoadingMetadata) return;
 
@@ -125,25 +169,14 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
       _isLoadingMetadata = true;
     });
 
-    Event? keyPackage;
     try {
-      final contactPk = await publicKeyFromString(publicKeyString: publicKey.trim());
-      final metadata = await fetchMetadata(pubkey: contactPk);
-
-      try {
-        keyPackage = await fetchKeyPackage(pubkey: contactPk);
-        _logger.info('Key package fetched: $keyPackage');
-      } catch (e) {
-        _logger.warning('Failed to fetch key package: $e');
-        keyPackage = null;
-      }
+      // Use metadata cache to fetch contact model
+      final metadataCache = ref.read(metadataCacheProvider.notifier);
+      final contactModel = await metadataCache.getContactModel(publicKey.trim());
 
       if (mounted) {
         setState(() {
-          _tempContact = ContactModel.fromMetadata(
-            publicKey: publicKey.trim(),
-            metadata: metadata,
-          );
+          _tempContact = contactModel;
           _isLoadingMetadata = false;
         });
       }
@@ -198,20 +231,30 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
     _logger.info('Starting chat with contact: ${contact.publicKey}');
 
     try {
-      final pubkey = await publicKeyFromString(publicKeyString: contact.publicKey);
       Event? keyPackage;
 
       try {
-        keyPackage = await fetchKeyPackage(pubkey: pubkey);
+        // Use retry mechanism for key package fetching
+        keyPackage = await _fetchKeyPackageWithRetry(contact.publicKey);
+        _logger.info('Raw key package fetch result for ${contact.publicKey}: $keyPackage');
+        _logger.info('Key package is null: ${keyPackage == null}');
+        _logger.info('Key package type: ${keyPackage.runtimeType}');
       } catch (e) {
-        _logger.warning('Failed to fetch key package: $e');
+        _logger.warning(
+          'Failed to fetch key package for ${contact.publicKey} after all retries: $e',
+        );
         keyPackage = null;
       }
 
       if (mounted) {
-        _logger.info('Fetched key package: $keyPackage');
+        _logger.info('=== UI Decision Logic ===');
+        _logger.info('keyPackage != null: ${keyPackage != null}');
+        _logger.info(
+          'Final decision: ${keyPackage != null ? "StartSecureChatBottomSheet" : "LegacyInviteBottomSheet"}',
+        );
 
         if (keyPackage != null) {
+          _logger.info('Showing StartSecureChatBottomSheet for secure chat');
           StartSecureChatBottomSheet.show(
             context: context,
             name: contact.displayNameOrName,
@@ -224,6 +267,7 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
             },
           );
         } else {
+          _logger.info('Showing LegacyInviteBottomSheet for legacy invite');
           LegacyInviteBottomSheet.show(
             context: context,
             name: contact.displayNameOrName,
@@ -371,24 +415,18 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
             Navigator.pop(context);
 
             try {
-              final contactPk = await publicKeyFromString(
-                publicKeyString: kSupportNpub,
-              );
-              final metadata = await fetchMetadata(pubkey: contactPk);
-
-              final supportContact = ContactModel.fromMetadata(
-                publicKey: kSupportNpub,
-                metadata: metadata,
-              );
+              // Use metadata cache for support contact
+              final metadataCache = ref.read(metadataCacheProvider.notifier);
+              final supportContact = await metadataCache.getContactModel(kSupportNpub);
 
               if (context.mounted) {
                 _handleContactTap(supportContact);
               }
             } catch (e) {
-              _logger.warning('Failed to fetch metadata for public key: $e');
+              _logger.warning('Failed to fetch metadata for support contact: $e');
 
               final basicContact = ContactModel(
-                name: 'Unknown User',
+                name: 'Support',
                 publicKey: kSupportNpub,
               );
 
@@ -456,7 +494,7 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
         ],
         // Show message when no contacts or build the list
         if (filteredContacts.isEmpty && !showTempContact)
-          Container(
+          SizedBox(
             height: 200.h, // Fixed height for the message
             child: Center(
               child:
@@ -512,6 +550,19 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
     );
   }
 
+  Widget _buildContactsLoadingWidget() {
+    return Center(
+      child: SizedBox(
+        width: 32.w,
+        height: 32.w,
+        child: CircularProgressIndicator(
+          strokeWidth: 4.0,
+          valueColor: AlwaysStoppedAnimation<Color>(context.colorScheme.onSurface),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final contactsState = ref.watch(contactsProvider);
@@ -532,14 +583,13 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
           textController: _searchController,
           focusNode: _searchFocusNode,
           hintText: 'Search contact or public key...',
-          autofocus: false, // Explicitly set to false to prevent auto-focus
         ),
         Gap(16.h),
         // Scrollable content area
         Expanded(
           child:
               contactsState.isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? _buildContactsLoadingWidget()
                   : contactsState.error != null
                   ? _buildErrorWidget(contactsState.error!)
                   : SingleChildScrollView(
