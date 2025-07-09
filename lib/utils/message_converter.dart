@@ -5,32 +5,78 @@ import 'package:whitenoise/domain/models/message_model.dart';
 import 'package:whitenoise/domain/models/user_model.dart';
 import 'package:whitenoise/src/rust/api/messages.dart';
 
-/// Converts MessageWithTokensData to MessageModel for UI display
+/// Converts ChatMessageData to MessageModel for UI display
 class MessageConverter {
-  /// Converts a MessageWithTokensData to MessageModel
-  static Future<MessageModel> fromMessageWithTokensData(
-    MessageWithTokensData messageData, {
+  static Future<MessageModel> fromChatMessageData(
+    ChatMessageData messageData, {
     required String? currentUserPublicKey,
     String? groupId,
     required Ref ref,
+    Map<String, ChatMessageData>? messageCache,
   }) async {
-    // Determine if this message is from the current user
     final isMe = currentUserPublicKey != null && messageData.pubkey == currentUserPublicKey;
 
-    // Create a User object from the message sender using metadata
     final sender = await _createUserFromMetadata(
       messageData.pubkey,
       currentUserPubkey: currentUserPublicKey,
       ref: ref,
     );
 
-    // Convert BigInt timestamp to DateTime
     final createdAt = DateTime.fromMillisecondsSinceEpoch(
       messageData.createdAt.toInt() * 1000,
     );
 
-    // Determine message status (default to sent for received messages)
     final status = isMe ? MessageStatus.sent : MessageStatus.delivered;
+
+    final reactions = _convertReactions(messageData.reactions);
+
+    // Handle reply information
+    MessageModel? replyToMessage;
+    if (messageData.isReply && messageData.replyToId != null) {
+      final originalMessage = messageCache?[messageData.replyToId!];
+      if (originalMessage != null) {
+        final replyContent =
+            originalMessage.content.isNotEmpty ? originalMessage.content : 'No content available';
+
+        final replyTimestamp = DateTime.fromMillisecondsSinceEpoch(
+          originalMessage.createdAt.toInt() * 1000,
+        );
+
+        final replySender = await _createUserFromMetadata(
+          originalMessage.pubkey,
+          currentUserPubkey: currentUserPublicKey,
+          ref: ref,
+        );
+
+        replyToMessage = MessageModel(
+          id: messageData.replyToId!,
+          content: replyContent,
+          type: MessageType.text,
+          createdAt: replyTimestamp,
+          sender: replySender,
+          isMe: currentUserPublicKey != null && originalMessage.pubkey == currentUserPublicKey,
+          groupId: groupId,
+          status: MessageStatus.delivered,
+        );
+      } else {
+        // Fallback for missing original message
+        replyToMessage = MessageModel(
+          id: messageData.replyToId!,
+          content: 'Message not found',
+          type: MessageType.text,
+          createdAt: DateTime.now(),
+          sender: User(
+            id: 'unknown',
+            name: 'Unknown User',
+            nip05: '',
+            publicKey: 'unknown',
+          ),
+          isMe: false,
+          groupId: groupId,
+          status: MessageStatus.delivered,
+        );
+      }
+    }
 
     return MessageModel(
       id: messageData.id,
@@ -41,32 +87,446 @@ class MessageConverter {
       isMe: isMe,
       groupId: groupId,
       status: status,
+      reactions: reactions,
+      replyTo: replyToMessage,
     );
   }
 
-  /// Converts a list of MessageWithTokensData to MessageModel list
+  static Future<List<MessageModel>> fromChatMessageDataList(
+    List<ChatMessageData> messageDataList, {
+    required String? currentUserPublicKey,
+    String? groupId,
+    required Ref ref,
+  }) async {
+    // Filter valid messages first
+    final validMessages =
+        messageDataList.where((msg) => !msg.isDeleted && msg.content.isNotEmpty).toList();
+
+    // Build message cache for reply lookups
+    final messageCache = <String, ChatMessageData>{};
+    for (final msg in validMessages) {
+      messageCache[msg.id] = msg;
+    }
+
+    // Pre-fetch unique user metadata to avoid duplicate lookups
+    final uniquePubkeys = <String>{};
+    for (final msg in validMessages) {
+      uniquePubkeys.add(msg.pubkey);
+      // Also add reply authors if they exist
+      if (msg.isReply && msg.replyToId != null) {
+        final originalMsg = messageCache[msg.replyToId!];
+        if (originalMsg != null) {
+          uniquePubkeys.add(originalMsg.pubkey);
+        }
+      }
+    }
+
+    // Batch fetch all user metadata in parallel
+    final metadataCache = ref.read(metadataCacheProvider.notifier);
+    final userFutures = uniquePubkeys.map(
+      (pubkey) =>
+          metadataCache.getContactModel(pubkey).then((contact) => MapEntry(pubkey, contact)),
+    );
+    final userResults = await Future.wait(userFutures);
+    final userCache = Map<String, User>.fromEntries(
+      userResults.map(
+        (entry) => MapEntry(
+          entry.key,
+          User(
+            id: entry.key,
+            name: entry.key == currentUserPublicKey ? 'You' : entry.value.displayNameOrName,
+            nip05: entry.value.nip05 ?? '',
+            publicKey: entry.key,
+            imagePath: entry.value.imagePath,
+            username: entry.value.displayName,
+          ),
+        ),
+      ),
+    );
+
+    // Process all messages using cached data
+    final messages =
+        validMessages
+            .map(
+              (messageData) => _fromChatMessageDataWithCache(
+                messageData,
+                currentUserPublicKey: currentUserPublicKey,
+                groupId: groupId,
+                messageCache: messageCache,
+                userCache: userCache,
+              ),
+            )
+            .toList();
+
+    return messages;
+  }
+
+  /// Convert ChatMessageData to MessageModel using cached user data
+  static MessageModel _fromChatMessageDataWithCache(
+    ChatMessageData messageData, {
+    required String? currentUserPublicKey,
+    String? groupId,
+    required Map<String, ChatMessageData> messageCache,
+    required Map<String, User> userCache,
+  }) {
+    final isMe = currentUserPublicKey != null && messageData.pubkey == currentUserPublicKey;
+
+    // Use cached user data
+    final sender =
+        userCache[messageData.pubkey] ??
+        User(
+          id: messageData.pubkey,
+          name: 'Unknown User',
+          nip05: '',
+          publicKey: messageData.pubkey,
+        );
+
+    final createdAt = DateTime.fromMillisecondsSinceEpoch(
+      messageData.createdAt.toInt() * 1000,
+    );
+
+    final status = isMe ? MessageStatus.sent : MessageStatus.delivered;
+
+    final reactions = _convertReactions(messageData.reactions);
+
+    // Handle reply information
+    MessageModel? replyToMessage;
+    if (messageData.isReply && messageData.replyToId != null) {
+      final originalMessage = messageCache[messageData.replyToId!];
+      if (originalMessage != null) {
+        final replyContent =
+            originalMessage.content.isNotEmpty ? originalMessage.content : 'No content available';
+
+        final replyTimestamp = DateTime.fromMillisecondsSinceEpoch(
+          originalMessage.createdAt.toInt() * 1000,
+        );
+
+        final replySender =
+            userCache[originalMessage.pubkey] ??
+            User(
+              id: originalMessage.pubkey,
+              name: 'Unknown User',
+              nip05: '',
+              publicKey: originalMessage.pubkey,
+            );
+
+        replyToMessage = MessageModel(
+          id: messageData.replyToId!,
+          content: replyContent,
+          type: MessageType.text,
+          createdAt: replyTimestamp,
+          sender: replySender,
+          isMe: currentUserPublicKey != null && originalMessage.pubkey == currentUserPublicKey,
+          groupId: groupId,
+          status: MessageStatus.delivered,
+        );
+      } else {
+        // Fallback for missing original message
+        replyToMessage = MessageModel(
+          id: messageData.replyToId!,
+          content: 'Message not found',
+          type: MessageType.text,
+          createdAt: DateTime.now(),
+          sender: User(
+            id: 'unknown',
+            name: 'Unknown User',
+            nip05: '',
+            publicKey: 'unknown',
+          ),
+          isMe: false,
+          groupId: groupId,
+          status: MessageStatus.delivered,
+        );
+      }
+    }
+
+    return MessageModel(
+      id: messageData.id,
+      content: messageData.content,
+      type: MessageType.text,
+      createdAt: createdAt,
+      sender: sender,
+      isMe: isMe,
+      groupId: groupId,
+      status: status,
+      reactions: reactions,
+      replyTo: replyToMessage,
+    );
+  }
+
+  /// Convert MessageWithTokensData to MessageModel
+  static Future<MessageModel> fromMessageWithTokensData(
+    MessageWithTokensData messageData, {
+    required String? currentUserPublicKey,
+    String? groupId,
+    required Ref ref,
+    ChatMessageData? replyInfo,
+    Map<String, MessageWithTokensData>? originalMessageLookup,
+  }) async {
+    final isMe = currentUserPublicKey != null && messageData.pubkey == currentUserPublicKey;
+
+    final sender = await _createUserFromMetadata(
+      messageData.pubkey,
+      currentUserPubkey: currentUserPublicKey,
+      ref: ref,
+    );
+
+    final createdAt = DateTime.fromMillisecondsSinceEpoch(
+      messageData.createdAt.toInt() * 1000,
+    );
+
+    final status = isMe ? MessageStatus.sent : MessageStatus.delivered;
+
+    MessageModel? replyToMessage;
+    if (replyInfo != null && replyInfo.isReply && replyInfo.replyToId != null) {
+      final originalMessage = originalMessageLookup?[replyInfo.replyToId!];
+
+      if (originalMessage != null) {
+        final replyContent =
+            originalMessage.content?.isNotEmpty == true
+                ? originalMessage.content!
+                : 'No content available';
+        final replyTimestamp = DateTime.fromMillisecondsSinceEpoch(
+          originalMessage.createdAt.toInt() * 1000,
+        );
+
+        final replySender = await _createUserFromMetadata(
+          originalMessage.pubkey,
+          currentUserPubkey: currentUserPublicKey,
+          ref: ref,
+        );
+
+        replyToMessage = MessageModel(
+          id: replyInfo.replyToId!,
+          content: replyContent,
+          type: MessageType.text,
+          createdAt: replyTimestamp,
+          sender: replySender,
+          isMe: currentUserPublicKey != null && originalMessage.pubkey == currentUserPublicKey,
+          groupId: groupId,
+          status: MessageStatus.delivered,
+        );
+      } else {
+        // Fallback for missing original message
+        replyToMessage = MessageModel(
+          id: replyInfo.replyToId!,
+          content: 'No content available',
+          type: MessageType.text,
+          createdAt: DateTime.now(),
+          sender: User(
+            id: 'unknown',
+            name: 'Unknown User',
+            nip05: '',
+            publicKey: 'unknown',
+          ),
+          isMe: false,
+          groupId: groupId,
+          status: MessageStatus.delivered,
+        );
+      }
+    }
+
+    // Convert reactions from aggregated data if available
+    final reactions = replyInfo != null ? _convertReactions(replyInfo.reactions) : <Reaction>[];
+
+    return MessageModel(
+      id: messageData.id,
+      content: messageData.content ?? '',
+      type: MessageType.text,
+      createdAt: createdAt,
+      sender: sender,
+      isMe: isMe,
+      groupId: groupId,
+      status: status,
+      replyTo: replyToMessage,
+      reactions: reactions,
+    );
+  }
+
+  /// Converts a list of MessageWithTokensData to MessageModel list with reply mapping
+  /// TODO: Temporary solution using aggregated messages for reply information until API consolidation
   static Future<List<MessageModel>> fromMessageWithTokensDataList(
     List<MessageWithTokensData> messageDataList, {
     required String? currentUserPublicKey,
     String? groupId,
     required Ref ref,
+    List<ChatMessageData>? aggregatedMessages, // TODO: For reply mapping
   }) async {
-    final List<MessageModel> messages = [];
+    // Create lookup maps for reply functionality
+    final Map<String, ChatMessageData> replyMap = {};
+    final Map<String, MessageWithTokensData> originalMessageMap = {};
 
-    for (final messageData in messageDataList) {
-      final message = await fromMessageWithTokensData(
+    // Build original message lookup from primary message data
+    for (final msg in messageDataList) {
+      originalMessageMap[msg.id] = msg;
+    }
+
+    // Build reply information lookup from aggregated data
+    if (aggregatedMessages != null) {
+      for (final aggMsg in aggregatedMessages) {
+        replyMap[aggMsg.id] = aggMsg;
+      }
+    }
+
+    // Filter messages with content
+    final validMessages =
+        messageDataList.where((msg) => msg.content != null && msg.content!.isNotEmpty).toList();
+
+    // Pre-fetch unique user metadata to avoid duplicate lookups
+    final uniquePubkeys = <String>{};
+    for (final msg in validMessages) {
+      uniquePubkeys.add(msg.pubkey);
+      // Also add reply authors if they exist
+      final replyInfo = replyMap[msg.id];
+      if (replyInfo?.isReply == true && replyInfo?.replyToId != null) {
+        final originalMsg = originalMessageMap[replyInfo!.replyToId!];
+        if (originalMsg != null) {
+          uniquePubkeys.add(originalMsg.pubkey);
+        }
+      }
+    }
+
+    // Batch fetch all user metadata in parallel
+    final metadataCache = ref.read(metadataCacheProvider.notifier);
+    final userFutures = uniquePubkeys.map(
+      (pubkey) =>
+          metadataCache.getContactModel(pubkey).then((contact) => MapEntry(pubkey, contact)),
+    );
+    final userResults = await Future.wait(userFutures);
+    final userCache = Map<String, User>.fromEntries(
+      userResults.map(
+        (entry) => MapEntry(
+          entry.key,
+          User(
+            id: entry.key,
+            name: entry.key == currentUserPublicKey ? 'You' : entry.value.displayNameOrName,
+            nip05: entry.value.nip05 ?? '',
+            publicKey: entry.key,
+            imagePath: entry.value.imagePath,
+            username: entry.value.displayName,
+          ),
+        ),
+      ),
+    );
+
+    // Process messages in parallel using cached user data
+    final futures = validMessages.map((messageData) async {
+      final aggregatedData = replyMap[messageData.id];
+
+      return await _fromMessageWithTokensDataWithCache(
         messageData,
         currentUserPublicKey: currentUserPublicKey,
         groupId: groupId,
-        ref: ref,
+        replyInfo: aggregatedData,
+        originalMessageLookup: originalMessageMap,
+        userCache: userCache,
       );
-      messages.add(message);
-    }
+    });
 
+    // Wait for all messages to be processed in parallel
+    final messages = await Future.wait(futures);
     return messages;
   }
 
-  /// Creates a User object from metadata
+  /// Convert MessageWithTokensData to MessageModel using cached user data
+  static Future<MessageModel> _fromMessageWithTokensDataWithCache(
+    MessageWithTokensData messageData, {
+    required String? currentUserPublicKey,
+    String? groupId,
+    ChatMessageData? replyInfo,
+    Map<String, MessageWithTokensData>? originalMessageLookup,
+    required Map<String, User> userCache,
+  }) async {
+    final isMe = currentUserPublicKey != null && messageData.pubkey == currentUserPublicKey;
+
+    // Use cached user data instead of fetching
+    final sender =
+        userCache[messageData.pubkey] ??
+        User(
+          id: messageData.pubkey,
+          name: 'Unknown User',
+          nip05: '',
+          publicKey: messageData.pubkey,
+        );
+
+    final createdAt = DateTime.fromMillisecondsSinceEpoch(
+      messageData.createdAt.toInt() * 1000,
+    );
+
+    final status = isMe ? MessageStatus.sent : MessageStatus.delivered;
+
+    // Extract reply information from aggregated data if available
+    MessageModel? replyToMessage;
+    if (replyInfo != null && replyInfo.isReply && replyInfo.replyToId != null) {
+      final originalMessage = originalMessageLookup?[replyInfo.replyToId!];
+
+      if (originalMessage != null) {
+        final replyContent =
+            originalMessage.content?.isNotEmpty == true
+                ? originalMessage.content!
+                : 'No content available';
+        final replyTimestamp = DateTime.fromMillisecondsSinceEpoch(
+          originalMessage.createdAt.toInt() * 1000,
+        );
+
+        // Use cached user data for reply sender too
+        final replySender =
+            userCache[originalMessage.pubkey] ??
+            User(
+              id: originalMessage.pubkey,
+              name: 'Unknown User',
+              nip05: '',
+              publicKey: originalMessage.pubkey,
+            );
+
+        replyToMessage = MessageModel(
+          id: replyInfo.replyToId!,
+          content: replyContent,
+          type: MessageType.text,
+          createdAt: replyTimestamp,
+          sender: replySender,
+          isMe: currentUserPublicKey != null && originalMessage.pubkey == currentUserPublicKey,
+          groupId: groupId,
+          status: MessageStatus.delivered,
+        );
+      } else {
+        // Fallback for missing original message
+        replyToMessage = MessageModel(
+          id: replyInfo.replyToId!,
+          content: 'No content available',
+          type: MessageType.text,
+          createdAt: DateTime.now(),
+          sender: User(
+            id: 'unknown',
+            name: 'Unknown User',
+            nip05: '',
+            publicKey: 'unknown',
+          ),
+          isMe: false,
+          groupId: groupId,
+          status: MessageStatus.delivered,
+        );
+      }
+    }
+
+    // Convert reactions from aggregated data if available
+    final reactions = replyInfo != null ? _convertReactions(replyInfo.reactions) : <Reaction>[];
+
+    return MessageModel(
+      id: messageData.id,
+      content: messageData.content ?? '',
+      type: MessageType.text,
+      createdAt: createdAt,
+      sender: sender,
+      isMe: isMe,
+      groupId: groupId,
+      status: status,
+      replyTo: replyToMessage,
+      reactions: reactions,
+    );
+  }
+
+  /// Creates a User object from metadata cache (asynchronous)
   static Future<User> _createUserFromMetadata(
     String pubkey, {
     String? currentUserPubkey,
@@ -83,27 +543,7 @@ class MessageConverter {
     }
 
     try {
-      // Try to get metadata from the metadata cache
-      final metadataCache = ref.read(metadataCacheProvider.notifier);
-      final contactModel = await metadataCache.getContactModel(pubkey);
-
-      return User(
-        id: pubkey,
-        name: contactModel.displayNameOrName,
-        nip05: contactModel.nip05 ?? '',
-        publicKey: pubkey,
-        imagePath: contactModel.imagePath,
-        username: contactModel.displayName,
-      );
-    } catch (e) {
-      // Fallback to contact provider if metadata cache fails
-      return _createUserFromContactProvider(pubkey, ref: ref);
-    }
-  }
-
-  /// Fallback method to create User from contact provider
-  static User _createUserFromContactProvider(String pubkey, {required Ref ref}) {
-    try {
+      // First try contacts provider for cached data
       final contacts = ref.read(contactsProvider);
       final contactModels = contacts.contactModels ?? [];
 
@@ -123,16 +563,32 @@ class MessageConverter {
           username: contactModel.displayName,
         );
       }
-    } catch (e) {
-      // Continue to fallback if contact lookup fails
-    }
 
-    // Return fallback user if contact not found
-    return User(
-      id: pubkey,
-      name: 'Unknown User',
-      nip05: '',
-      publicKey: pubkey,
-    );
+      // If not found in contacts, try metadata cache
+      final metadataCache = ref.read(metadataCacheProvider.notifier);
+      final contactModel = await metadataCache.getContactModel(pubkey);
+
+      return User(
+        id: pubkey,
+        name: contactModel.displayNameOrName,
+        nip05: contactModel.nip05 ?? '',
+        publicKey: pubkey,
+        imagePath: contactModel.imagePath,
+        username: contactModel.displayName,
+      );
+    } catch (e) {
+      // Return fallback user if both lookups fail
+      return User(
+        id: pubkey,
+        name: 'Unknown User',
+        nip05: '',
+        publicKey: pubkey,
+      );
+    }
+  }
+
+  ///TODO Convert ReactionSummaryData to MessageModel reactions format
+  static List<Reaction> _convertReactions(ReactionSummaryData reactions) {
+    return [];
   }
 }

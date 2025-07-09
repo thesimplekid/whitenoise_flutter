@@ -77,6 +77,31 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
   }
 
+  void _scrollToMessage(String messageId) {
+    final messages = ref.read(
+      chatProvider.select((state) => state.groupMessages[widget.groupId] ?? []),
+    );
+    final messageIndex = messages.indexWhere((msg) => msg.id == messageId);
+
+    if (messageIndex != -1 && _scrollController.hasClients) {
+      final targetIndex = messageIndex + 1;
+
+      final totalItems = messages.length + 1;
+      final maxScrollExtent = _scrollController.position.maxScrollExtent;
+
+      final approximateItemHeight = maxScrollExtent / totalItems;
+      final targetPosition = targetIndex * approximateItemHeight;
+
+      final clampedPosition = targetPosition.clamp(0.0, maxScrollExtent);
+
+      _scrollController.animateTo(
+        clampedPosition,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final groupsNotifier = ref.watch(groupsProvider.notifier);
@@ -124,7 +149,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             },
             child: GestureDetector(
               onTap: () {
-                // Dismiss keyboard when tapping in empty space
                 FocusManager.instance.primaryFocus?.unfocus();
               },
               behavior: HitTestBehavior.translucent,
@@ -159,7 +183,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         final message = messages[index - 1];
                         return SwipeToReplyWidget(
                           message: message,
-                          onReply: () => chatNotifier.handleReply(message),
+                          onReply: () => chatNotifier.handleReply(message, groupId: widget.groupId),
                           onTap:
                               () => ChatDialogService.showReactionDialog(
                                 context: context,
@@ -179,6 +203,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                       message: message,
                                       reaction: reaction,
                                     );
+                                  },
+                                  onReplyTap: (messageId) {
+                                    _scrollToMessage(messageId);
                                   },
                                 )
                                 .animate()
@@ -212,14 +239,27 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
       bottomSheet: ChatInput(
         groupId: widget.groupId,
-        onInputFocused: _handleScrollToBottom, // Add callback for when input gets focus
-        onSend:
-            (message, isEditing) => chatNotifier.sendMessage(
+        onInputFocused: _handleScrollToBottom,
+        onSend: (message, isEditing) async {
+          final chatState = ref.read(chatProvider);
+          final replyingTo = chatState.replyingTo[widget.groupId];
+
+          if (replyingTo != null) {
+            await chatNotifier.sendReplyMessage(
+              groupId: widget.groupId,
+              replyToMessageId: replyingTo.id,
+              message: message,
+              onMessageSent: _handleScrollToBottom,
+            );
+          } else {
+            await chatNotifier.sendMessage(
               groupId: widget.groupId,
               message: message,
               isEditing: isEditing,
               onMessageSent: _handleScrollToBottom,
-            ),
+            );
+          }
+        },
       ),
     );
   }
