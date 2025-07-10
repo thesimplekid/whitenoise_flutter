@@ -31,7 +31,7 @@ class ShareInviteBottomSheet extends ConsumerStatefulWidget {
     return CustomBottomSheet.show(
       context: context,
       title: 'Invite to Chat',
-      heightFactor: 0.8,
+      heightFactor: 0.75,
       blurSigma: 8.0,
       transitionDuration: const Duration(milliseconds: 400),
       builder:
