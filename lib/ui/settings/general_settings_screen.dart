@@ -23,6 +23,7 @@ import 'package:whitenoise/ui/core/ui/custom_app_bar.dart';
 import 'package:whitenoise/ui/core/ui/whitenoise_dialog.dart';
 import 'package:whitenoise/ui/settings/developer/developer_settings_screen.dart';
 import 'package:whitenoise/ui/settings/profile/switch_profile_bottom_sheet.dart';
+import 'package:whitenoise/utils/public_key_validation_extension.dart';
 
 class GeneralSettingsScreen extends ConsumerStatefulWidget {
   const GeneralSettingsScreen({super.key});
@@ -170,7 +171,7 @@ class _GeneralSettingsScreenState extends ConsumerState<GeneralSettingsScreen> {
         try {
           // Try to convert npub to hex for matching
           String hexKey = selectedProfile.publicKey;
-          if (selectedProfile.publicKey.startsWith('npub1')) {
+          if (selectedProfile.publicKey.isValidNpubPublicKey) {
             hexKey = await hexPubkeyFromNpub(npub: selectedProfile.publicKey);
           }
 
