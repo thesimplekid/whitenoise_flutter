@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
+import 'package:supa_carbon_icons/supa_carbon_icons.dart';
 import 'package:whitenoise/config/constants.dart';
 import 'package:whitenoise/config/extensions/toast_extension.dart';
 import 'package:whitenoise/config/providers/active_account_provider.dart';
@@ -18,8 +20,9 @@ import 'package:whitenoise/ui/contact_list/new_group_chat_sheet.dart';
 import 'package:whitenoise/ui/contact_list/widgets/contact_list_tile.dart';
 import 'package:whitenoise/ui/core/themes/assets.dart';
 import 'package:whitenoise/ui/core/themes/src/extensions.dart';
+import 'package:whitenoise/ui/core/ui/app_text_form_field.dart';
 import 'package:whitenoise/ui/core/ui/custom_bottom_sheet.dart';
-import 'package:whitenoise/ui/core/ui/custom_textfield.dart';
+import 'package:whitenoise/utils/public_key_validation_extension.dart';
 
 class NewChatBottomSheet extends ConsumerStatefulWidget {
   const NewChatBottomSheet({super.key});
@@ -112,10 +115,7 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
   }
 
   bool _isValidPublicKey(String input) {
-    final trimmed = input.trim();
-    // Check if it's a hex key (64 characters) or npub format
-    return (trimmed.length == 64 && RegExp(r'^[0-9a-fA-F]+$').hasMatch(trimmed)) ||
-        (trimmed.startsWith('npub1') && trimmed.length > 10);
+    return input.trim().isValidPublicKey;
   }
 
   Future<void> _fetchMetadataForPublicKey(String publicKey) async {
@@ -208,12 +208,17 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
         ContactLoadingBottomSheet.show(
           context: context,
           contact: contact,
-          onChatCreated: () {
-            // Close the parent new chat bottom sheet when chat is created
-            Navigator.pop(context);
+          onChatCreated: (groupData) {
+            if (groupData != null && mounted) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  context.pop();
+                  context.navigateToGroupChatAndPopToHome(groupData);
+                }
+              });
+            }
           },
           onInviteSent: () {
-            // Close the parent new chat bottom sheet when invite is sent
             Navigator.pop(context);
           },
         );
@@ -304,53 +309,18 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
   Widget _buildMainOptions() {
     return Column(
       children: [
-        // New Group Chat option
-        GestureDetector(
+        NewChatTile(
+          title: 'New Group Chat',
+          iconPath: AssetsPaths.icGroupChat,
           onTap: () {
             Navigator.pop(context);
-            NewGroupChatSheet.show(
-              context,
-              onGroupCreated: context.createChatNavigationCallback(),
-            );
+            NewGroupChatSheet.show(context);
           },
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-            child: Row(
-              children: [
-                SvgPicture.asset(
-                  AssetsPaths.icGroupChat,
-                  colorFilter: ColorFilter.mode(
-                    context.colors.mutedForeground,
-                    BlendMode.srcIn,
-                  ),
-                  width: 20.w,
-                  height: 20.w,
-                ),
-                Gap(10.w),
-                Expanded(
-                  child: Text(
-                    'New Group Chat',
-                    style: TextStyle(
-                      color: context.colors.mutedForeground,
-                      fontSize: 18.sp,
-                    ),
-                  ),
-                ),
-                SvgPicture.asset(
-                  AssetsPaths.icChevronRight,
-                  colorFilter: ColorFilter.mode(
-                    context.colors.mutedForeground,
-                    BlendMode.srcIn,
-                  ),
-                  width: 8.55.w,
-                  height: 15.w,
-                ),
-              ],
-            ),
-          ),
         ),
-        // Help and Feedback option
-        GestureDetector(
+        Gap(18.h),
+        NewChatTile(
+          title: 'Help and Feedback',
+          iconPath: AssetsPaths.icFeedback,
           onTap: () async {
             Navigator.pop(context);
 
@@ -375,41 +345,6 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
               }
             }
           },
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-            child: Row(
-              children: [
-                SvgPicture.asset(
-                  AssetsPaths.icFeedback,
-                  colorFilter: ColorFilter.mode(
-                    context.colors.mutedForeground,
-                    BlendMode.srcIn,
-                  ),
-                  width: 20.w,
-                  height: 20.w,
-                ),
-                Gap(10.w),
-                Expanded(
-                  child: Text(
-                    'Help and Feedback',
-                    style: TextStyle(
-                      color: context.colors.mutedForeground,
-                      fontSize: 18.sp,
-                    ),
-                  ),
-                ),
-                SvgPicture.asset(
-                  AssetsPaths.icChevronRight,
-                  colorFilter: ColorFilter.mode(
-                    context.colors.mutedForeground,
-                    BlendMode.srcIn,
-                  ),
-                  width: 8.55.w,
-                  height: 15.w,
-                ),
-              ],
-            ),
-          ),
         ),
       ],
     );
@@ -425,16 +360,12 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 24.w),
-            child:
-                _isLoadingMetadata
-                    ? _buildLoadingContactTile()
-                    : ContactListTile(
-                      contact: _tempContact!,
-                      onTap: () => _handleContactTap(_tempContact!),
-                    ),
-          ),
+          _isLoadingMetadata
+              ? _buildLoadingContactTile()
+              : ContactListTile(
+                contact: _tempContact!,
+                onTap: () => _handleContactTap(_tempContact!),
+              ),
           Gap(16.h),
         ],
       );
@@ -468,7 +399,7 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
       return SizedBox(
         height: availableHeight, // Fill all available space
         child: ListView.separated(
-          padding: EdgeInsets.only(bottom: 20.h), // Bottom padding for last item
+          padding: EdgeInsets.only(bottom: 20.h),
           itemCount: filteredContacts.length,
           separatorBuilder: (context, index) => SizedBox(height: 4.h),
           itemBuilder: (context, index) {
@@ -515,7 +446,7 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
             // Build contacts list for smaller lists
             ...filteredContacts.map(
               (contact) => Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 2.h),
+                padding: EdgeInsets.symmetric(vertical: 2.h),
                 child: ContactListTile(
                   contact: contact,
                   enableSwipeToDelete: true,
@@ -579,10 +510,18 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         // Search field - not auto-focused
-        CustomTextField(
-          textController: _searchController,
+        AppTextFormField(
+          controller: _searchController,
           focusNode: _searchFocusNode,
+
           hintText: 'Search contact or public key...',
+          decoration: InputDecoration(
+            prefixIcon: Icon(
+              CarbonIcons.search,
+              color: context.colors.primary,
+              size: 20.sp,
+            ),
+          ),
         ),
         Gap(16.h),
         // Scrollable content area
@@ -605,7 +544,9 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
                         child: Column(
                           children: [
                             // Main options (New Group Chat, Help & Feedback) - now scrollable
+                            Gap(26.h),
                             _buildMainOptions(),
+                            Gap(26.h),
                             // DEBUG: Raw contacts section
                             if (_searchQuery.toLowerCase() == 'debug') ...[
                               Gap(16.h),
@@ -714,6 +655,58 @@ class _NewChatBottomSheetState extends ConsumerState<NewChatBottomSheet> {
                   ),
         ),
       ],
+    );
+  }
+}
+
+class NewChatTile extends StatelessWidget {
+  const NewChatTile({
+    super.key,
+    required this.onTap,
+    required this.title,
+    required this.iconPath,
+  });
+
+  final VoidCallback? onTap;
+  final String title;
+  final String iconPath;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Row(
+        children: [
+          SvgPicture.asset(
+            iconPath,
+            colorFilter: ColorFilter.mode(
+              context.colors.primary,
+              BlendMode.srcIn,
+            ),
+            width: 20.w,
+            height: 20.w,
+          ),
+          Gap(10.w),
+          Text(
+            title,
+            style: TextStyle(
+              color: context.colors.primary,
+              fontSize: 18.sp,
+            ),
+          ),
+          Gap(8.w),
+
+          SvgPicture.asset(
+            AssetsPaths.icChevronRight,
+            colorFilter: ColorFilter.mode(
+              context.colors.primary,
+              BlendMode.srcIn,
+            ),
+            width: 8.55.w,
+            height: 15.w,
+          ),
+        ],
+      ),
     );
   }
 }
