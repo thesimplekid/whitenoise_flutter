@@ -62,69 +62,76 @@ class _ShareProfileQrScanScreenState extends ConsumerState<ShareProfileQrScanScr
           bottom: false,
           child: ColoredBox(
             color: context.colors.neutral,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Gap(24.h),
-                  Row(
-                    children: [
-                      const BackButton(),
-                      Text(
-                        'Scan QR Code',
-                        style: TextStyle(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w600,
-                          color: context.colors.mutedForeground,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Container(
-                    width: 288.w,
-                    height: 288.w,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: context.colors.primary,
-                        width: 1.w,
-                      ),
-                    ),
-                    child: MobileScanner(controller: _controller),
-                  ),
-                  Gap(16.h),
-                  Text(
-                    'Scan user\'s QR code to connect.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
-                      color: context.colors.mutedForeground,
-                    ),
-                  ),
-                  const Spacer(),
-                  AppFilledButton.icon(
-                    label: SvgPicture.asset(
-                      AssetsPaths.icQrCode,
-                      colorFilter: ColorFilter.mode(
-                        context.colors.primaryForeground,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                    icon: Text(
-                      'View QR Code',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Gap(24.h),
+                Row(
+                  children: [
+                    const BackButton(),
+                    Text(
+                      'Scan QR Code',
                       style: TextStyle(
-                        color: context.colors.primaryForeground,
-                        fontSize: 14.sp,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.w600,
+                        color: context.colors.mutedForeground,
                       ),
                     ),
-                    onPressed: () => context.pop(),
+                  ],
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Spacer(),
+                        Container(
+                          width: 288.w,
+                          height: 288.w,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: context.colors.primary,
+                              width: 1.w,
+                            ),
+                          ),
+                          child: MobileScanner(controller: _controller),
+                        ),
+                        Gap(16.h),
+                        Text(
+                          'Scan user\'s QR code to connect.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w500,
+                            color: context.colors.mutedForeground,
+                          ),
+                        ),
+                        const Spacer(),
+                        AppFilledButton.icon(
+                          label: SvgPicture.asset(
+                            AssetsPaths.icQrCode,
+                            colorFilter: ColorFilter.mode(
+                              context.colors.primaryForeground,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                          icon: Text(
+                            'View QR Code',
+                            style: TextStyle(
+                              color: context.colors.primaryForeground,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          onPressed: () => context.pop(),
+                        ),
+                        Gap(64.h),
+                      ],
+                    ),
                   ),
-                  Gap(64.h),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -170,9 +177,10 @@ class _ShareProfileQrScanScreenState extends ConsumerState<ShareProfileQrScanScr
       if (mounted) {
         await StartSecureChatBottomSheet.show(
           context: context,
-          name: contact.name,
+          name: contact.displayNameOrName,
           nip05: contact.nip05 ?? '',
           pubkey: npub,
+          imagePath: contact.imagePath,
           onChatCreated: (groupData) {
             if (groupData != null && mounted) {
               // Navigate to home first, then to the group chat

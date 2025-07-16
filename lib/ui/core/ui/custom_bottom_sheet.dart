@@ -14,9 +14,6 @@ class CustomBottomSheet {
     String? title,
     bool showCloseButton = true,
     bool showBackButton = false,
-    double heightFactor = 0.9,
-    bool wrapContent = false,
-    double? maxHeight,
     bool barrierDismissible = true,
     String? barrierLabel,
     bool blurBackground = true,
@@ -32,7 +29,7 @@ class CustomBottomSheet {
       barrierLabel: barrierLabel ?? 'BottomSheet',
       isScrollControlled: true,
       showDragHandle: false,
-      backgroundColor: Colors.transparent,
+      backgroundColor: context.colors.bottomSheetBarrier,
       builder:
           (BuildContext context) => Stack(
             children: [
@@ -53,7 +50,7 @@ class CustomBottomSheet {
                   color: Colors.transparent,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Theme.of(context).scaffoldBackgroundColor,
+                      color: context.colors.primaryForeground,
                     ),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
