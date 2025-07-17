@@ -14,7 +14,7 @@ class DarkAppColors {
   /// base/background
   static const primaryBackground = Color(0xff2D312D);
 
-  static const primaryForeground = Color(0xff0A0A0A);
+  static const primaryForeground = Color(0xffFFFFFF);
 
   /// base/accent-foreground, base/secondary-foreground, base/foreground
   static const secondaryForeground = Color(0xffF2F2F2);

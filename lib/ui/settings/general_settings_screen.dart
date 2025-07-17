@@ -385,6 +385,11 @@ class _GeneralSettingsScreenState extends ConsumerState<GeneralSettingsScreen> {
                       onTap: () => context.push('${Routes.settings}/network'),
                     ),
                     SettingsListTile(
+                      icon: CarbonIcons.wallet,
+                      text: 'Wallet',
+                      onTap: () => context.push(Routes.settingsWallet),
+                    ),
+                    SettingsListTile(
                       icon: CarbonIcons.logout,
                       text: 'Sign out',
                       onTap: _handleLogout,
@@ -442,6 +447,7 @@ class SettingsListTile extends StatelessWidget {
   });
 
   final IconData icon;
+
   final String text;
   final VoidCallback onTap;
   final Color? foregroundColor;

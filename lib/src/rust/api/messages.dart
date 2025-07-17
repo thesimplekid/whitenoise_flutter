@@ -422,10 +422,7 @@ class SerializableTokenData {
   final String tokenType;
   final String? content;
 
-  const SerializableTokenData({
-    required this.tokenType,
-    this.content,
-  });
+  const SerializableTokenData({required this.tokenType, this.content});
 
   @override
   int get hashCode => tokenType.hashCode ^ content.hashCode;

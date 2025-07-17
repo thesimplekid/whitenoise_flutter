@@ -259,13 +259,6 @@ class GroupData {
           state == other.state;
 }
 
-enum GroupState {
-  active,
-  inactive,
-  pending,
-}
+enum GroupState { active, inactive, pending }
 
-enum GroupType {
-  directMessage,
-  group,
-}
+enum GroupType { directMessage, group }

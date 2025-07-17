@@ -30,6 +30,7 @@ use crate::api::groups::*;
 use crate::api::messages::*;
 use crate::api::relays::*;
 use crate::api::utils::*;
+use crate::api::wallet::*;
 use crate::api::welcomes::*;
 use crate::api::*;
 use flutter_rust_bridge::for_generated::byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
@@ -44,7 +45,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.11.1";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1085588867;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1742202046;
 
 // Section: executor
 
@@ -52,6 +53,354 @@ flutter_rust_bridge::frb_generated_default_handler!();
 
 // Section: wire_funcs
 
+fn wire__crate__api__wallet__CdkWallet_add_mint_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "CdkWallet_add_mint",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CdkWallet>,
+            >>::sse_decode(&mut deserializer);
+            let api_work_dir = <String>::sse_decode(&mut deserializer);
+            let api_mint_url = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::wallet::CdkWallet::add_mint(
+                            &*api_that_guard,
+                            &api_work_dir,
+                            &api_mint_url,
+                        )
+                        .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__wallet__CdkWallet_check_mint_quote_status_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "CdkWallet_check_mint_quote_status",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CdkWallet>,
+            >>::sse_decode(&mut deserializer);
+            let api_work_dir = <String>::sse_decode(&mut deserializer);
+            let api_mint_url = <String>::sse_decode(&mut deserializer);
+            let api_quote_id = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::wallet::CdkWallet::check_mint_quote_status(
+                            &*api_that_guard,
+                            &api_work_dir,
+                            &api_mint_url,
+                            &api_quote_id,
+                        )
+                        .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__wallet__CdkWallet_get_balance_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "CdkWallet_get_balance",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CdkWallet>,
+            >>::sse_decode(&mut deserializer);
+            let api_work_dir = <String>::sse_decode(&mut deserializer);
+            let api_mint_url = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::wallet::CdkWallet::get_balance(
+                            &*api_that_guard,
+                            &api_work_dir,
+                            &api_mint_url,
+                        )
+                        .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__wallet__CdkWallet_mint_tokens_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "CdkWallet_mint_tokens",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CdkWallet>,
+            >>::sse_decode(&mut deserializer);
+            let api_work_dir = <String>::sse_decode(&mut deserializer);
+            let api_mint_url = <String>::sse_decode(&mut deserializer);
+            let api_quote_id = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::wallet::CdkWallet::mint_tokens(
+                            &*api_that_guard,
+                            &api_work_dir,
+                            &api_mint_url,
+                            &api_quote_id,
+                        )
+                        .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__wallet__CdkWallet_new_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "CdkWallet_new",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let output_ok = Result::<_, ()>::Ok(crate::api::wallet::CdkWallet::new())?;
+                    Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
+fn wire__crate__api__wallet__CdkWallet_request_mint_quote_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "CdkWallet_request_mint_quote",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CdkWallet>,
+            >>::sse_decode(&mut deserializer);
+            let api_work_dir = <String>::sse_decode(&mut deserializer);
+            let api_mint_url = <String>::sse_decode(&mut deserializer);
+            let api_amount_sats = <u64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::wallet::CdkWallet::request_mint_quote(
+                            &*api_that_guard,
+                            &api_work_dir,
+                            &api_mint_url,
+                            api_amount_sats,
+                        )
+                        .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__utils__MetadataData_auto_accessor_get_about_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -4250,6 +4599,9 @@ flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
     flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Account>
 );
 flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
+    flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CdkWallet>
+);
+flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
     flutter_rust_bridge::for_generated::RustAutoOpaqueInner<ChatMessage>
 );
 flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
@@ -4302,6 +4654,16 @@ impl SseDecode for Account {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut inner = <RustOpaqueMoi<
             flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Account>,
+        >>::sse_decode(deserializer);
+        return flutter_rust_bridge::for_generated::rust_auto_opaque_decode_owned(inner);
+    }
+}
+
+impl SseDecode for CdkWallet {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <RustOpaqueMoi<
+            flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CdkWallet>,
         >>::sse_decode(deserializer);
         return flutter_rust_bridge::for_generated::rust_auto_opaque_decode_owned(inner);
     }
@@ -4432,6 +4794,16 @@ impl SseDecode for std::collections::HashMap<String, String> {
 }
 
 impl SseDecode for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Account>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <usize>::sse_decode(deserializer);
+        return decode_rust_opaque_moi(inner);
+    }
+}
+
+impl SseDecode
+    for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CdkWallet>>
+{
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut inner = <usize>::sse_decode(deserializer);
@@ -5178,183 +5550,203 @@ fn pde_ffi_dispatcher_primary_impl(
 ) {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        19 => {
+        1 => wire__crate__api__wallet__CdkWallet_add_mint_impl(port, ptr, rust_vec_len, data_len),
+        2 => wire__crate__api__wallet__CdkWallet_check_mint_quote_status_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        3 => {
+            wire__crate__api__wallet__CdkWallet_get_balance_impl(port, ptr, rust_vec_len, data_len)
+        }
+        4 => {
+            wire__crate__api__wallet__CdkWallet_mint_tokens_impl(port, ptr, rust_vec_len, data_len)
+        }
+        5 => wire__crate__api__wallet__CdkWallet_new_impl(port, ptr, rust_vec_len, data_len),
+        6 => wire__crate__api__wallet__CdkWallet_request_mint_quote_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        25 => {
             wire__crate__api__utils__MetadataData_get_custom_impl(port, ptr, rust_vec_len, data_len)
         }
-        20 => {
+        26 => {
             wire__crate__api__utils__MetadataData_set_custom_impl(port, ptr, rust_vec_len, data_len)
         }
-        21 => wire__crate__api__welcomes__accept_welcome_impl(port, ptr, rust_vec_len, data_len),
-        22 => wire__crate__api__contacts__add_contact_impl(port, ptr, rust_vec_len, data_len),
-        23 => {
+        27 => wire__crate__api__welcomes__accept_welcome_impl(port, ptr, rust_vec_len, data_len),
+        28 => wire__crate__api__contacts__add_contact_impl(port, ptr, rust_vec_len, data_len),
+        29 => {
             wire__crate__api__groups__add_members_to_group_impl(port, ptr, rust_vec_len, data_len)
         }
-        24 => wire__crate__api__accounts__convert_account_to_data_impl(
+        30 => wire__crate__api__accounts__convert_account_to_data_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        25 => wire__crate__api__messages__convert_chat_message_to_data_impl(
+        31 => wire__crate__api__messages__convert_chat_message_to_data_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        26 => {
+        32 => {
             wire__crate__api__utils__convert_config_to_data_impl(port, ptr, rust_vec_len, data_len)
         }
-        27 => {
+        33 => {
             wire__crate__api__groups__convert_group_to_data_impl(port, ptr, rust_vec_len, data_len)
         }
-        28 => wire__crate__api__messages__convert_message_with_tokens_to_data_impl(
+        34 => wire__crate__api__messages__convert_message_with_tokens_to_data_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        29 => wire__crate__api__utils__convert_metadata_data_to_metadata_impl(
+        35 => wire__crate__api__utils__convert_metadata_data_to_metadata_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        30 => wire__crate__api__utils__convert_metadata_to_data_impl(
+        36 => wire__crate__api__utils__convert_metadata_to_data_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        31 => wire__crate__api__welcomes__convert_welcome_to_data_impl(
+        37 => wire__crate__api__welcomes__convert_welcome_to_data_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        32 => wire__crate__api__groups__create_group_impl(port, ptr, rust_vec_len, data_len),
-        33 => wire__crate__api__accounts__create_identity_impl(port, ptr, rust_vec_len, data_len),
-        34 => wire__crate__api__utils__create_whitenoise_config_impl(
+        38 => wire__crate__api__groups__create_group_impl(port, ptr, rust_vec_len, data_len),
+        39 => wire__crate__api__accounts__create_identity_impl(port, ptr, rust_vec_len, data_len),
+        40 => wire__crate__api__utils__create_whitenoise_config_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        35 => wire__crate__api__welcomes__decline_welcome_impl(port, ptr, rust_vec_len, data_len),
-        36 => wire__crate__api__delete_all_data_impl(port, ptr, rust_vec_len, data_len),
-        37 => {
+        41 => wire__crate__api__welcomes__decline_welcome_impl(port, ptr, rust_vec_len, data_len),
+        42 => wire__crate__api__delete_all_data_impl(port, ptr, rust_vec_len, data_len),
+        43 => {
             wire__crate__api__accounts__export_account_npub_impl(port, ptr, rust_vec_len, data_len)
         }
-        38 => {
+        44 => {
             wire__crate__api__accounts__export_account_nsec_impl(port, ptr, rust_vec_len, data_len)
         }
-        39 => wire__crate__api__accounts__fetch_account_impl(port, ptr, rust_vec_len, data_len),
-        40 => wire__crate__api__accounts__fetch_accounts_impl(port, ptr, rust_vec_len, data_len),
-        41 => wire__crate__api__messages__fetch_aggregated_messages_for_group_impl(
+        45 => wire__crate__api__accounts__fetch_account_impl(port, ptr, rust_vec_len, data_len),
+        46 => wire__crate__api__accounts__fetch_accounts_impl(port, ptr, rust_vec_len, data_len),
+        47 => wire__crate__api__messages__fetch_aggregated_messages_for_group_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        42 => wire__crate__api__contacts__fetch_contacts_impl(port, ptr, rust_vec_len, data_len),
-        43 => wire__crate__api__groups__fetch_group_admins_impl(port, ptr, rust_vec_len, data_len),
-        44 => wire__crate__api__groups__fetch_group_members_impl(port, ptr, rust_vec_len, data_len),
-        45 => wire__crate__api__groups__fetch_groups_impl(port, ptr, rust_vec_len, data_len),
-        46 => wire__crate__api__relays__fetch_key_package_impl(port, ptr, rust_vec_len, data_len),
-        47 => wire__crate__api__messages__fetch_messages_for_group_impl(
+        48 => wire__crate__api__contacts__fetch_contacts_impl(port, ptr, rust_vec_len, data_len),
+        49 => wire__crate__api__groups__fetch_group_admins_impl(port, ptr, rust_vec_len, data_len),
+        50 => wire__crate__api__groups__fetch_group_members_impl(port, ptr, rust_vec_len, data_len),
+        51 => wire__crate__api__groups__fetch_groups_impl(port, ptr, rust_vec_len, data_len),
+        52 => wire__crate__api__relays__fetch_key_package_impl(port, ptr, rust_vec_len, data_len),
+        53 => wire__crate__api__messages__fetch_messages_for_group_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        48 => wire__crate__api__accounts__fetch_metadata_impl(port, ptr, rust_vec_len, data_len),
-        49 => wire__crate__api__accounts__fetch_onboarding_state_impl(
+        54 => wire__crate__api__accounts__fetch_metadata_impl(port, ptr, rust_vec_len, data_len),
+        55 => wire__crate__api__accounts__fetch_onboarding_state_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        50 => wire__crate__api__relays__fetch_relay_status_impl(port, ptr, rust_vec_len, data_len),
-        51 => wire__crate__api__relays__fetch_relays_impl(port, ptr, rust_vec_len, data_len),
-        52 => wire__crate__api__welcomes__fetch_welcome_impl(port, ptr, rust_vec_len, data_len),
-        53 => wire__crate__api__welcomes__fetch_welcomes_impl(port, ptr, rust_vec_len, data_len),
-        54 => wire__crate__api__utils__get_default_blossom_server_url_impl(
+        56 => wire__crate__api__relays__fetch_relay_status_impl(port, ptr, rust_vec_len, data_len),
+        57 => wire__crate__api__relays__fetch_relays_impl(port, ptr, rust_vec_len, data_len),
+        58 => wire__crate__api__welcomes__fetch_welcome_impl(port, ptr, rust_vec_len, data_len),
+        59 => wire__crate__api__welcomes__fetch_welcomes_impl(port, ptr, rust_vec_len, data_len),
+        60 => wire__crate__api__utils__get_default_blossom_server_url_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        55 => {
+        61 => {
             wire__crate__api__groups__group_id_from_string_impl(port, ptr, rust_vec_len, data_len)
         }
-        56 => wire__crate__api__groups__group_id_to_string_impl(port, ptr, rust_vec_len, data_len),
-        57 => wire__crate__api__utils__hex_pubkey_from_npub_impl(port, ptr, rust_vec_len, data_len),
-        58 => wire__crate__api__utils__hex_pubkey_from_public_key_impl(
+        62 => wire__crate__api__groups__group_id_to_string_impl(port, ptr, rust_vec_len, data_len),
+        63 => wire__crate__api__utils__hex_pubkey_from_npub_impl(port, ptr, rust_vec_len, data_len),
+        64 => wire__crate__api__utils__hex_pubkey_from_public_key_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        59 => wire__crate__api__utils__image_type_from_extension_impl(
+        65 => wire__crate__api__utils__image_type_from_extension_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        60 => wire__crate__api__utils__image_type_gif_impl(port, ptr, rust_vec_len, data_len),
-        61 => wire__crate__api__utils__image_type_jpeg_impl(port, ptr, rust_vec_len, data_len),
-        62 => wire__crate__api__utils__image_type_jpg_impl(port, ptr, rust_vec_len, data_len),
-        63 => wire__crate__api__utils__image_type_png_impl(port, ptr, rust_vec_len, data_len),
-        64 => wire__crate__api__utils__image_type_webp_impl(port, ptr, rust_vec_len, data_len),
-        65 => wire__crate__api__initialize_whitenoise_impl(port, ptr, rust_vec_len, data_len),
-        66 => wire__crate__api__accounts__login_impl(port, ptr, rust_vec_len, data_len),
-        67 => wire__crate__api__accounts__logout_impl(port, ptr, rust_vec_len, data_len),
-        68 => wire__crate__api__utils__npub_from_hex_pubkey_impl(port, ptr, rust_vec_len, data_len),
-        69 => wire__crate__api__utils__npub_from_public_key_impl(port, ptr, rust_vec_len, data_len),
-        70 => {
+        66 => wire__crate__api__utils__image_type_gif_impl(port, ptr, rust_vec_len, data_len),
+        67 => wire__crate__api__utils__image_type_jpeg_impl(port, ptr, rust_vec_len, data_len),
+        68 => wire__crate__api__utils__image_type_jpg_impl(port, ptr, rust_vec_len, data_len),
+        69 => wire__crate__api__utils__image_type_png_impl(port, ptr, rust_vec_len, data_len),
+        70 => wire__crate__api__utils__image_type_webp_impl(port, ptr, rust_vec_len, data_len),
+        71 => wire__crate__api__initialize_whitenoise_impl(port, ptr, rust_vec_len, data_len),
+        72 => wire__crate__api__accounts__login_impl(port, ptr, rust_vec_len, data_len),
+        73 => wire__crate__api__accounts__logout_impl(port, ptr, rust_vec_len, data_len),
+        74 => wire__crate__api__utils__npub_from_hex_pubkey_impl(port, ptr, rust_vec_len, data_len),
+        75 => wire__crate__api__utils__npub_from_public_key_impl(port, ptr, rust_vec_len, data_len),
+        76 => {
             wire__crate__api__utils__public_key_from_string_impl(port, ptr, rust_vec_len, data_len)
         }
-        71 => wire__crate__api__contacts__query_contacts_impl(port, ptr, rust_vec_len, data_len),
-        72 => wire__crate__api__relays__relay_type_inbox_impl(port, ptr, rust_vec_len, data_len),
-        73 => {
+        77 => wire__crate__api__contacts__query_contacts_impl(port, ptr, rust_vec_len, data_len),
+        78 => wire__crate__api__relays__relay_type_inbox_impl(port, ptr, rust_vec_len, data_len),
+        79 => {
             wire__crate__api__relays__relay_type_key_package_impl(port, ptr, rust_vec_len, data_len)
         }
-        74 => wire__crate__api__relays__relay_type_nostr_impl(port, ptr, rust_vec_len, data_len),
-        75 => {
+        80 => wire__crate__api__relays__relay_type_nostr_impl(port, ptr, rust_vec_len, data_len),
+        81 => {
             wire__crate__api__utils__relay_url_from_string_impl(port, ptr, rust_vec_len, data_len)
         }
-        76 => wire__crate__api__contacts__remove_contact_impl(port, ptr, rust_vec_len, data_len),
-        77 => wire__crate__api__groups__remove_members_from_group_impl(
+        82 => wire__crate__api__contacts__remove_contact_impl(port, ptr, rust_vec_len, data_len),
+        83 => wire__crate__api__groups__remove_members_from_group_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        78 => wire__crate__api__messages__send_direct_message_nip04_impl(
+        84 => wire__crate__api__messages__send_direct_message_nip04_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        79 => wire__crate__api__messages__send_message_to_group_impl(
+        85 => wire__crate__api__messages__send_message_to_group_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        80 => {
+        86 => {
             wire__crate__api__utils__string_from_relay_url_impl(port, ptr, rust_vec_len, data_len)
         }
-        81 => wire__crate__api__utils__tag_from_vec_impl(port, ptr, rust_vec_len, data_len),
-        82 => wire__crate__api__contacts__update_contacts_impl(port, ptr, rust_vec_len, data_len),
-        83 => wire__crate__api__accounts__update_metadata_impl(port, ptr, rust_vec_len, data_len),
-        84 => wire__crate__api__relays__update_relays_impl(port, ptr, rust_vec_len, data_len),
-        85 => wire__crate__api__accounts__upload_profile_picture_impl(
+        87 => wire__crate__api__utils__tag_from_vec_impl(port, ptr, rust_vec_len, data_len),
+        88 => wire__crate__api__contacts__update_contacts_impl(port, ptr, rust_vec_len, data_len),
+        89 => wire__crate__api__accounts__update_metadata_impl(port, ptr, rust_vec_len, data_len),
+        90 => wire__crate__api__relays__update_relays_impl(port, ptr, rust_vec_len, data_len),
+        91 => wire__crate__api__accounts__upload_profile_picture_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        86 => wire__crate__api__utils__whitenoise_error_to_string_impl(
+        92 => wire__crate__api__utils__whitenoise_error_to_string_impl(
             port,
             ptr,
             rust_vec_len,
@@ -5372,92 +5764,92 @@ fn pde_ffi_dispatcher_sync_impl(
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        1 => wire__crate__api__utils__MetadataData_auto_accessor_get_about_impl(
+        7 => wire__crate__api__utils__MetadataData_auto_accessor_get_about_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        2 => wire__crate__api__utils__MetadataData_auto_accessor_get_banner_impl(
+        8 => wire__crate__api__utils__MetadataData_auto_accessor_get_banner_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        3 => wire__crate__api__utils__MetadataData_auto_accessor_get_display_name_impl(
+        9 => wire__crate__api__utils__MetadataData_auto_accessor_get_display_name_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        4 => wire__crate__api__utils__MetadataData_auto_accessor_get_lud06_impl(
+        10 => wire__crate__api__utils__MetadataData_auto_accessor_get_lud06_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        5 => wire__crate__api__utils__MetadataData_auto_accessor_get_lud16_impl(
+        11 => wire__crate__api__utils__MetadataData_auto_accessor_get_lud16_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        6 => wire__crate__api__utils__MetadataData_auto_accessor_get_name_impl(
+        12 => wire__crate__api__utils__MetadataData_auto_accessor_get_name_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        7 => wire__crate__api__utils__MetadataData_auto_accessor_get_nip05_impl(
+        13 => wire__crate__api__utils__MetadataData_auto_accessor_get_nip05_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        8 => wire__crate__api__utils__MetadataData_auto_accessor_get_picture_impl(
+        14 => wire__crate__api__utils__MetadataData_auto_accessor_get_picture_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        9 => wire__crate__api__utils__MetadataData_auto_accessor_get_website_impl(
+        15 => wire__crate__api__utils__MetadataData_auto_accessor_get_website_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        10 => wire__crate__api__utils__MetadataData_auto_accessor_set_about_impl(
+        16 => wire__crate__api__utils__MetadataData_auto_accessor_set_about_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        11 => wire__crate__api__utils__MetadataData_auto_accessor_set_banner_impl(
+        17 => wire__crate__api__utils__MetadataData_auto_accessor_set_banner_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        12 => wire__crate__api__utils__MetadataData_auto_accessor_set_display_name_impl(
+        18 => wire__crate__api__utils__MetadataData_auto_accessor_set_display_name_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        13 => wire__crate__api__utils__MetadataData_auto_accessor_set_lud06_impl(
+        19 => wire__crate__api__utils__MetadataData_auto_accessor_set_lud06_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        14 => wire__crate__api__utils__MetadataData_auto_accessor_set_lud16_impl(
+        20 => wire__crate__api__utils__MetadataData_auto_accessor_set_lud16_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        15 => wire__crate__api__utils__MetadataData_auto_accessor_set_name_impl(
+        21 => wire__crate__api__utils__MetadataData_auto_accessor_set_name_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        16 => wire__crate__api__utils__MetadataData_auto_accessor_set_nip05_impl(
+        22 => wire__crate__api__utils__MetadataData_auto_accessor_set_nip05_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        17 => wire__crate__api__utils__MetadataData_auto_accessor_set_picture_impl(
+        23 => wire__crate__api__utils__MetadataData_auto_accessor_set_picture_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        18 => wire__crate__api__utils__MetadataData_auto_accessor_set_website_impl(
+        24 => wire__crate__api__utils__MetadataData_auto_accessor_set_website_impl(
             ptr,
             rust_vec_len,
             data_len,
@@ -5479,6 +5871,21 @@ impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for FrbWrapper<
 
 impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<Account>> for Account {
     fn into_into_dart(self) -> FrbWrapper<Account> {
+        self.into()
+    }
+}
+
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<CdkWallet> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self.0)
+            .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for FrbWrapper<CdkWallet> {}
+
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<CdkWallet>> for CdkWallet {
+    fn into_into_dart(self) -> FrbWrapper<CdkWallet> {
         self.into()
     }
 }
@@ -6007,6 +6414,13 @@ impl SseEncode for Account {
     }
 }
 
+impl SseEncode for CdkWallet {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CdkWallet>>>::sse_encode(flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self), serializer);
+    }
+}
+
 impl SseEncode for Event {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -6108,6 +6522,17 @@ impl SseEncode for std::collections::HashMap<String, String> {
 }
 
 impl SseEncode for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Account>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        let (ptr, size) = self.sse_encode_raw();
+        <usize>::sse_encode(ptr, serializer);
+        <i32>::sse_encode(size, serializer);
+    }
+}
+
+impl SseEncode
+    for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CdkWallet>>
+{
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         let (ptr, size) = self.sse_encode_raw();
@@ -6750,6 +7175,7 @@ mod io {
     use crate::api::messages::*;
     use crate::api::relays::*;
     use crate::api::utils::*;
+    use crate::api::wallet::*;
     use crate::api::welcomes::*;
     use crate::api::*;
     use flutter_rust_bridge::for_generated::byteorder::{
@@ -6774,6 +7200,20 @@ mod io {
         ptr: *const std::ffi::c_void,
     ) {
         MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Account>>::decrement_strong_count(ptr as _);
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_whitenoise_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCdkWallet(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CdkWallet>>::increment_strong_count(ptr as _);
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_whitenoise_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCdkWallet(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CdkWallet>>::decrement_strong_count(ptr as _);
     }
 
     #[unsafe(no_mangle)]

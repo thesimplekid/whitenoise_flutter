@@ -200,9 +200,4 @@ class WelcomeData {
           createdAt == other.createdAt;
 }
 
-enum WelcomeState {
-  pending,
-  accepted,
-  declined,
-  ignored,
-}
+enum WelcomeState { pending, accepted, declined, ignored }

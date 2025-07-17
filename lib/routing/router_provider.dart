@@ -20,6 +20,7 @@ import 'package:whitenoise/ui/settings/nostr_keys/nostr_keys_screen.dart';
 import 'package:whitenoise/ui/settings/profile/edit_profile_screen.dart';
 import 'package:whitenoise/ui/settings/profile/share_profile_qr_scan_screen.dart';
 import 'package:whitenoise/ui/settings/profile/share_profile_screen.dart';
+import 'package:whitenoise/ui/settings/wallet/wallet_demo_screen.dart';
 import 'package:whitenoise/ui/settings/wallet/wallet_screen.dart';
 
 /// Navigation observer that dismisses toasts when routes change
@@ -176,6 +177,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'wallet',
             builder: (context, state) => const WalletScreen(),
+            routes: [
+              GoRoute(
+                path: 'demo',
+                builder: (context, state) => const WalletDemoScreen(),
+              ),
+            ],
           ),
           GoRoute(
             path: 'developer',

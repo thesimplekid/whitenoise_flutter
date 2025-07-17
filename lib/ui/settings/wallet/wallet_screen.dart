@@ -1,120 +1,82 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import 'package:whitenoise/config/extensions/toast_extension.dart';
-import 'package:whitenoise/shared/custom_icon_button.dart';
-import 'package:whitenoise/shared/info_box.dart';
-import 'package:whitenoise/ui/core/themes/assets.dart';
+import 'package:go_router/go_router.dart';
+import 'package:whitenoise/routing/routes.dart';
 import 'package:whitenoise/ui/core/themes/src/extensions.dart';
 import 'package:whitenoise/ui/core/ui/custom_app_bar.dart';
-import 'package:whitenoise/ui/core/ui/custom_textfield.dart';
 
-class WalletScreen extends ConsumerStatefulWidget {
+class WalletScreen extends ConsumerWidget {
   const WalletScreen({super.key});
 
   @override
-  ConsumerState<WalletScreen> createState() => _WalletScreenState();
-}
-
-class _WalletScreenState extends ConsumerState<WalletScreen> {
-  final TextEditingController _connectionSecretController = TextEditingController();
-
-  @override
-  void dispose() {
-    _connectionSecretController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: context.colors.neutral,
-      appBar: const CustomAppBar(title: Text('Wallet')),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
+      appBar: const CustomAppBar(title: Text('CDK Wallet')),
+      body: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // CDK Wallet Demo Section
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: context.colors.baseMuted,
+                borderRadius: BorderRadius.circular(8.r),
+                border: Border.all(color: context.colors.border),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Gap(24.h),
-                        Text(
-                          'Connect bitcoin lightning wallet to send and receive payments within White Noise.',
-                          style: TextStyle(
-                            fontSize: 18.sp,
-                            color: context.colors.secondaryForeground,
-                          ),
-                        ),
-                        Gap(24.h),
-                        Text(
-                          'Connection Secret',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w500,
-                            color: context.colors.secondaryForeground,
-                          ),
-                        ),
-                        Gap(8.h),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: CustomTextField(
-                                textController: _connectionSecretController,
-                                hintText: 'nostr+walletconnect://...',
-                                padding: EdgeInsets.zero,
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 16.w,
-                                ),
-                              ),
-                            ),
-                            Gap(8.w),
-                            CustomIconButton(
-                              iconPath: AssetsPaths.icCopy,
-                              onTap: () {
-                                Clipboard.setData(
-                                  ClipboardData(
-                                    text: _connectionSecretController.text,
-                                  ),
-                                );
-                                ref.showSuccessToast(
-                                  'Connection secret copied to clipboard',
-                                );
-                              },
-                            ),
-                            Gap(8.w),
-                            CustomIconButton(
-                              iconPath: AssetsPaths.icScan,
-                              onTap: () {
-                                // QR code scanner functionality
-                              },
-                            ),
-                          ],
-                        ),
-                        Gap(52.h),
-                      ],
+                  Text(
+                    'CDK Wallet Demo',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: context.colors.primaryForeground,
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    child: InfoBox(
-                      colorTheme: context.colors.secondaryForeground,
-                      title: 'What wallet can I connect?',
-                      description:
-                          'You can connect any wallet that supports Nostr Wallet Connect. See full list of such wallets here.',
+                  Gap(8.h),
+                  Text(
+                    'Try out the integrated Cashu wallet functionality.',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: context.colors.mutedForeground,
+                    ),
+                  ),
+                  Gap(16.h),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        context.push(Routes.walletDemo);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: context.colors.primary,
+                        foregroundColor: context.colors.primaryForeground,
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                      ),
+                      child: Text(
+                        'Open Wallet Demo',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
